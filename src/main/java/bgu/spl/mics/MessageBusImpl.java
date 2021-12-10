@@ -4,6 +4,7 @@ import java.security.PrivateKey;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The {@link MessageBusImpl class is the implementation of the MessageBus interface.
@@ -11,10 +12,10 @@ import java.util.Queue;
  * Only private fields and methods can be added to this class.
  */
 public class MessageBusImpl implements MessageBus {
-	private HashMap<Class<? extends Event>, CountList> eventsListsOfServiseces;
-	private HashMap<Class<? extends Event>, List<Integer>> broadcastsListsOfServiseces;
-	private HashMap<Integer, Queue<Message>> microservicesQueus;
-	private HashMap<Integer, Future> microservicesFutures;
+	private ConcurrentHashMap<Class<? extends Event>, CountList> eventsListsOfServiseces;
+	private ConcurrentHashMap<Class<? extends Event>, List<Integer>> broadcastsListsOfServiseces;
+	private ConcurrentHashMap<Integer, Queue<Message>> microservicesQueus;
+	private ConcurrentHashMap<Integer, Future> microservicesFutures;
 	//	private HashMap<Integer, MicroService> mocroservicesId;
 	private int nextId = 0;
 	private static final MessageBusImpl instance = new MessageBusImpl();
