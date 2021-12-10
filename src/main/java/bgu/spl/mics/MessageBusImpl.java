@@ -12,23 +12,26 @@ import java.util.concurrent.ConcurrentHashMap;
  * Only private fields and methods can be added to this class.
  */
 public class MessageBusImpl implements MessageBus {
-	private ConcurrentHashMap<Class<? extends Event>, CountList> eventsListsOfServiseces;
-	private ConcurrentHashMap<Class<? extends Event>, List<Integer>> broadcastsListsOfServiseces;
-	private ConcurrentHashMap<Integer, Queue<Message>> microservicesQueus;
-	private ConcurrentHashMap<Integer, Future> microservicesFutures;
-	//	private HashMap<Integer, MicroService> mocroservicesId;
-	private int nextId = 0;
-	private static final MessageBusImpl instance = new MessageBusImpl();
+	private ConcurrentMap<Class<? extends Event>, BlockingQueue<MicroService>> eventsQueuesOfServices;
+	private ConcurrentMap<Class<? extends Broadcast>, Vector<MicroService>> broadcastsListsOfServices;
+	private ConcurrentMap<MicroService, BlockingQueue<Message>> microservicesQueus;
+	private ConcurrentMap<Event, Future> eventsFutures;
 
+	private static class SingeltonHolder{
+		private static MessageBusImpl instance = new MessageBusImpl();
+	}
 	private MessageBusImpl(){
+		this.eventsQueuesOfServices = new ConcurrentHashMap<>();
+		this.broadcastsListsOfServices = new ConcurrentHashMap<>();
+		this.microservicesQueus = new ConcurrentHashMap<>();
+		this.eventsFutures = new ConcurrentHashMap<>();
 	}
-
-	@Override
-	public void addFuture(int id, Future future){
-	}
-
 	public static MessageBusImpl getInstance(){
-		return instance;
+		return SingeltonHolder.instance;
+	}
+
+	private void addFuture(Event e, Future future){
+		eventsFutures.put(e, future);
 	}
 
 	@Override

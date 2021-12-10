@@ -8,7 +8,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class MessageBusImplTest {
-    MessageBusImpl msgBus = MessageBusImpl.getInstance();
+    MessageBus msgBus = MessageBusImpl.getInstance();
     GPUService gpuServ = new GPUService("service1");
     StudentService student1 = new StudentService("Dani");
     StudentService student2 = new StudentService("Josh");
