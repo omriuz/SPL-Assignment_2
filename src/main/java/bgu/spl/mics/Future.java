@@ -11,11 +11,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class Future<T> {
 
+	private T result;
+	private boolean isDone;
 	/**
 	 * This should be the only public constructor in this class.
 	 */
-	private T result;
-	private boolean isDone;
 	public Future() {
 		isDone = false;
 	}
@@ -30,8 +30,16 @@ public class Future<T> {
 	 * @post: (isDone() == true)
 	 */
 	public T get() {
-		//TODO: implement this.
-		return null;
+		synchronized (this) {
+			while (!isDone()) {
+				try {
+					this.wait();
+				} catch (InterruptedException e) {
+				}
+			}
+		}
+		return result;
+
 	}
 
 	/**
@@ -40,14 +48,17 @@ public class Future<T> {
 	 * @post this.reuslt == @param result && isDone()==true
 	 */
 	public void resolve (T result) {
-		//TODO: implement this.
+		synchronized (this) {
+			this.result = result;
+			isDone = true;
+			notifyAll();
+		}
 	}
 
 	/**
 	 * @return true if this object has been resolved, false otherwise
 	 */
 	public boolean isDone() {
-		//TODO: implement this.
 		return isDone;
 	}
 	/**
@@ -64,8 +75,14 @@ public class Future<T> {
 	 * @pre:
 	 */
 	public T get(long timeout, TimeUnit unit) {
-		//TODO: implement this.
-		return null;
+		if(!isDone()){
+			try{
+				unit.sleep(timeout);
+			}
+			catch (InterruptedException e){
+			}
+		}
+		return isDone() ? result : null;
 	}
 
 }
