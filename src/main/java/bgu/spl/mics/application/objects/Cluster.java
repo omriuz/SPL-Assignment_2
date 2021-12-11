@@ -19,4 +19,28 @@ public class Cluster {
 		return null;
 	}
 
+	public void sendDataBatchToCluster(DataBatch batch){
+			unprocessed.add(batch);
+	}
+	public DataBatch sendDataBatchToGPU(GPU gpu){
+		DataBatch d = null;
+		try{
+			d = GPUsDataQueues.get(gpu).take();
+		}
+		catch (InterruptedException e) {}
+		return d;
+	}
+
+	public void sendDataBatchToCPU(CPU cpu){
+		try {
+			cpu.addDataBatch(unprocessed.take());
+		}catch (InterruptedException I){};
+	}
+
+	public void addProcessedData(DataBatch dataBatch){
+		GPUsDataQueues.get(dataBatch.getGpu()).add(dataBatch);
+	}
+	public Boolean isThereDataBatch(GPU gpu){
+		return !GPUsDataQueues.get(gpu).isEmpty();
+	}
 }
