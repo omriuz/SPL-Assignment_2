@@ -14,13 +14,16 @@ import java.util.Queue;
  */
 public class CPU {
     private int cores;
-    private Collection<DataBatch> NPDataBatches;
-    private Collection<DataBatch> PDataBatches;
-    private Cluster cluster;
-    private CPUService CPUService;
+    private DataBatch dataBatch;
+    private final Cluster cluster;
+    private int processTickCounter;
+//    private CPUService CPUService;
 
     public CPU (int cores_num){
         this.cores=cores_num;
+        this.dataBatch = null;
+        this.cluster = Cluster.getInstance();
+        this.processTickCounter = 0;
     }
     public Cluster getCluster() {
         return cluster;
@@ -28,21 +31,43 @@ public class CPU {
     public int getCores() {
         return cores;
     }
-    public int getNPDataBatchesSize(){return NPDataBatches.size();}
-    public int getPDataBatchesSize(){return PDataBatches.size();}
-    public boolean isPDataBatchesEmpty(){return PDataBatches.isEmpty();}
-    public boolean isNPDataBatchesEmpty(){return NPDataBatches.isEmpty();}
+    public boolean isdataBatchEmpty(){
+        return dataBatch == null;
+    }
 
     /**
     * @pre @param data != null
     * @post @pre NPDataBatches.size()+ @param data.size()==this.NPDataBatches.size()
     */
-    public void addData(Collection<DataBatch> data){throw new NotImplementedException();}
+    public void addDataBatch(DataBatch dataBatch){
+        this.dataBatch = dataBatch;
+    }
     /**
      * @pre this.NPDataBatches.size() > 0
      * @post this.NPDataBatches.isEmpty() && !this.PDataBatches.isEmpty()
      */
-    public void process(){throw new NotImplementedException();}
+    private int DataTypeToInt(Data.Type dataType){
+        int ans = 0;
+        if(dataType == Data.Type.Images) ans = 4;
+        else if (dataType == Data.Type.Text) ans = 2;
+        else ans = 1;
+        return ans;
+    }
+    private boolean finishProcess(){
+        boolean ans = false;
+        int factor = 32/cores;
+        if(processTickCounter >= factor*DataTypeToInt(dataBatch.getData().getType())) ans = true;
+
+        return ans;
+    }
+    public void process(){
+        processTickCounter++;
+        if(finishProcess()){
+            cluster.addProcessedData(dataBatch);
+            dataBatch = null;
+            processTickCounter = 0;
+        }
+    }
 
     /**
      * @pre !PDataBatches.isEmpty()

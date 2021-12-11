@@ -1,6 +1,12 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.PublishConferenceBroadcast;
+import bgu.spl.mics.application.messages.TickBroadcast;
+import bgu.spl.mics.application.objects.Model;
+import bgu.spl.mics.application.objects.Student;
+
+import java.util.LinkedList;
 
 /**
  * Student is responsible for sending the {@link TrainModelEvent},
@@ -12,14 +18,37 @@ import bgu.spl.mics.MicroService;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class StudentService extends MicroService {
-    public StudentService(String name) {
-        super("Change_This_Name");
-        // TODO Implement this
+    Student student;
+
+    public StudentService(String name, Student student) {
+        super(name);
+        this.student = student;
+    }
+    /*
+        protected final <T, E extends Event<T>> void subscribeEvent(Class<E> type, Callback<E> callback) {
+        callbacksMap.putIfAbsent(type,callback);
+        bus.subscribeEvent(type,this);
+    }
+     */
+    private void subscribe(){
+        subscribeBroadcast(PublishConferenceBroadcast.class, (message)->{
+            LinkedList<Model> publishedModels = (LinkedList<Model>) message.getModelsToPublish();
+            for(Model m : publishedModels){
+                if(student.getModels().contains(m)){
+                    student.incPublications();
+                }else{
+                    student.incPapersRead();
+                }
+            }
+        });
+
+        subscribeBroadcast(TickBroadcast.class, t->{ // TODO general callbeck for the TickBroadcast
+
+        });
     }
 
     @Override
     protected void initialize() {
-        // TODO Implement this
-
+        subscribe();
     }
 }

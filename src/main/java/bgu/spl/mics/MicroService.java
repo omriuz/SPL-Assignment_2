@@ -153,6 +153,10 @@ public abstract class MicroService implements Runnable {
      * The entry point of the micro-service.
      * otherwise you will end up in an infinite loop.
      */
+    public MessageBus getBus(){
+        return bus;
+    }
+
     @Override
     public final void run() {
         bus.register(this);
@@ -165,7 +169,6 @@ public abstract class MicroService implements Runnable {
             }
             catch (InterruptedException e){ }
             bus.unregister(this);
-
         }
     }
 
