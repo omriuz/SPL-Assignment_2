@@ -1,10 +1,8 @@
 package bgu.spl.mics;
 import java.lang.Override;
-import java.security.PrivateKey;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Vector;
+import java.util.concurrent.*;
 
 /**
  * The {@link MessageBusImpl class is the implementation of the MessageBus interface.
@@ -34,79 +32,79 @@ public class MessageBusImpl implements MessageBus {
 		eventsFutures.put(e, future);
 	}
 
-	@Override
-	public <T> boolean isSubscribeToEvent(int id, Class<? extends Event<T>> type){
-		return eventsListsOfServiseces.get(type).isIn(id);
+
+	public <T> boolean isSubscribeToEvent(MicroService m, Class<? extends Event<T>> type){
+		return eventsQueuesOfServices.get(type).contains(m);
 	}
 
-	@Override
-	public <T> boolean isSubscribeToBroadcast(int id, Class<? extends Broadcast> type){
-		return broadcastsListsOfServiseces.get(type).contains(id);
+
+	public <T> boolean isSubscribeToBroadcast(MicroService m, Class<? extends Broadcast> type){
+		return broadcastsListsOfServices.get(type).contains(m);
 	}
 
-	public int getNextId(){
-		int next = nextId;
-		nextId++;
-		return next;
-	}
-	@Override
-	public boolean isRegister(int id){
-		return true;
+	public boolean isRegistered(MicroService m){
+		return microservicesQueus.containsKey(m);
 	}
 
-	public boolean inQueue(int id, Message message){
-		return true;
+	public boolean inQueue(MicroService m, Message message){
+		return microservicesQueus.get(m).contains(message);
 	}
 
 	@Override
 	public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
 
-		// TODO Auto-generated method stub
-
+		eventsQueuesOfServices.putIfAbsent(type, new LinkedBlockingDeque<>());
+		eventsQueuesOfServices.get(type).add(m); // add m to the Queue
 	}
 
 	@Override
 	public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
-		// TODO Auto-generated method stub
 
+		broadcastsListsOfServices.putIfAbsent(type, new Vector<>());
+		broadcastsListsOfServices.get(type).add(m); // add m to the Queue
 	}
 
 
 
 	@Override
 	public <T> void complete(Event<T> e, T result) {
-		// TODO Auto-generated method stub
-
+		eventsFutures.get(e).resolve(result);
 	}
 
 	@Override
 	public void sendBroadcast(Broadcast b) {
-		// TODO Auto-generated method stub
-
+		for(MicroService m : broadcastsListsOfServices.get(b.getClass())){ // for each microservice in b type, add b to its queue.
+			microservicesQueus.get(m).add(b);
+		}
 	}
 
 	@Override
 	public <T> Future<T> sendEvent(Event<T> e) {
-		// TODO Auto-generated method stub
-		return null;
+		Future<T> future = new Future<>();
+		try {
+			MicroService next = eventsQueuesOfServices.get(e.getClass()).take(); //get the next microservice to deal with e type
+			microservicesQueus.get(next).put(e); // add e to next queue
+			eventsQueuesOfServices.get(e.getClass()).put(next); // return next the end of the e type queue
+			eventsFutures.put(e,future); // crate a connection between e and the new future
+		}catch (InterruptedException inter){};
+
+		return future;
 	}
 
 	@Override
 	public void register(MicroService m) {
-		// TODO Auto-generated method stub
-
+			microservicesQueus.putIfAbsent(m, new LinkedBlockingDeque<>());
 	}
 
 	@Override
 	public void unregister(MicroService m) {
-		// TODO Auto-generated method stub
-
+		// need to deal with the references related to this microservice
+			microservicesQueus.remove(m);
 	}
 
 	@Override
 	public Message awaitMessage(MicroService m) throws InterruptedException {
-		// TODO Auto-generated method stub
-		return null;
+		return microservicesQueus.get(m).take();
 	}
 
 
