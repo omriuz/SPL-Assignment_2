@@ -24,12 +24,11 @@ public class CRMSRunner {
     public static AtomicInteger cpuTime = new AtomicInteger(0);
     public static AtomicInteger amountOfBatches = new AtomicInteger(0);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         List<Student> students = new LinkedList<Student>();
         List<ConfrenceInformation> confrences = new LinkedList<>();
         List<GPU> gpus = new LinkedList<>();
         List<CPU> cpus = new LinkedList<>();
-
         Student firstStudent = new Student("Simba","Computer Science", Student.Degree.MSc);
         Model firstModel = new Model("YOLO10",new Data(Data.Type.Images,200000),firstStudent);
         firstStudent.addModel(firstModel);
@@ -40,34 +39,37 @@ public class CRMSRunner {
         CPUService firstCPUtService = new CPUService("first",cpu);
         ConfrenceInformation first = new ConfrenceInformation("ICML",2000);
         ConferenceService conferenceService = new ConferenceService(first);
-        TimeService timer = new TimeService(5500,50);
-        Thread gpu = new Thread(firstGpuService);
-        Thread cpu1 = new Thread(firstCPUtService);
-        Thread conf1 = new Thread(conferenceService);
-        Thread student1 = new Thread(firstStudentService);
-        Thread timing = new Thread(timer);
+        TimeService timer = new TimeService(5500,1);
+        Thread gpu = new Thread(firstGpuService,"GPU");
+        Thread cpu1 = new Thread(firstCPUtService,"CPU");
+        Thread conf1 = new Thread(conferenceService,"Conference");
+        Thread student1 = new Thread(firstStudentService,"Student");
+        Thread timing = new Thread(timer,"timing");
         gpu.start();
         cpu1.start();
         conf1.start();
         student1.start();
         timing.start();
+//        students.add(firstStudent);
+//        confrences.add(first);
         createOutputFile(getOutputString(students,confrences,gpuTime.get(),cpuTime.get(),amountOfBatches.get()));
     }
 
     public static String getOutputString(List<Student> students, List<ConfrenceInformation> confs, int gpuTime,int cpuTime, int amountOfBatches){
         StringBuilder ans = new StringBuilder();
         for(Student student : students){
-            StringBuilder studentDescription = new StringBuilder(student.getName() + " Trained models are:\n");
+            StringBuilder studentDescription = new StringBuilder("For Student " + student.getName() + " Trained models are:\n");
             HashSet <Model> published = student.getPublishedModels();
             for( Model m : student.getTrainedModels()){
                 studentDescription.append(m.getName()).append(" ");
                 studentDescription.append(published.contains(m) ? "Published\n" : "Not published\n");
             }
-            studentDescription.append("Number of papers read: ").append(student.getPapersRead());
+            studentDescription.append("\n");
+            studentDescription.append("Number of papers read: ").append(student.getPapersRead()).append("\n");
             ans.append(studentDescription);
         }
         for(ConfrenceInformation conf : confs){
-            StringBuilder confDescription = new StringBuilder(conf.getName() + " publications are:\n");
+            StringBuilder confDescription = new StringBuilder("For Conference " + conf.getName() + " the publications are:\n");
             for(String name : conf.getNames()) confDescription.append(name).append(" ");
             ans.append(confDescription);
         }
@@ -90,15 +92,15 @@ public class CRMSRunner {
         }
     }
 
-    public void readJson() {
-        Gson gson = new Gson();
-        FileReader reader = null;
-        try {
-            reader = new FileReader("example_input.json");
-        } catch (FileNotFoundException e) {}
-        inputData input = gson.fromJson(reader, inputData.class);
-        print(input.getStudents()[0].getPapersRead());
-
-    }
+//    public void readJson() {
+//        Gson gson = new Gson();
+//        FileReader reader = null;
+//        try {
+//            reader = new FileReader("example_input.json");
+//        } catch (FileNotFoundException e) {}
+//        inputData input = gson.fromJson(reader, inputData.class);
+//        print(input.getStudents()[0].getPapersRead());
+//
+//    }
 
 }

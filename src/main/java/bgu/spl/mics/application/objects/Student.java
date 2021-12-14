@@ -40,6 +40,8 @@ public class Student {
         this.future = null;
         this.currentModel = 0;
         this.finished = false;
+        this.trainedModels = new HashSet<>();
+        this.publishedModels = new HashSet<>();
     }
 
     public String getName() {

@@ -13,6 +13,8 @@ public class MessageBusImpl implements MessageBus {
 	private ConcurrentMap<Class<? extends Broadcast>, Vector<MicroService>> broadcastsListsOfServices;
 	private ConcurrentMap<MicroService, BlockingQueue<Message>> microservicesQueus;
 	private ConcurrentMap<Event, Future> eventsFutures;
+	private Object lockBroadcast;
+	private Object lockEvent;
 
 	private static class SingletonHolder {
 		private static final MessageBusImpl instance = new MessageBusImpl();
@@ -22,8 +24,10 @@ public class MessageBusImpl implements MessageBus {
 		this.broadcastsListsOfServices = new ConcurrentHashMap<>();
 		this.microservicesQueus = new ConcurrentHashMap<>();
 		this.eventsFutures = new ConcurrentHashMap<>();
+		lockBroadcast = new Object();
+		lockEvent = new Object();
 	}
-	public static synchronized MessageBusImpl getInstance(){
+	public static MessageBusImpl getInstance(){
 		return SingletonHolder.instance;
 	}
 
@@ -31,11 +35,9 @@ public class MessageBusImpl implements MessageBus {
 		eventsFutures.put(e, future);
 	}
 
-
 	public <T> boolean isSubscribeToEvent(MicroService m, Class<? extends Event<T>> type){
 		return eventsQueuesOfServices.get(type).contains(m);
 	}
-
 
 	public <T> boolean isSubscribeToBroadcast(MicroService m, Class<? extends Broadcast> type){
 		return broadcastsListsOfServices.get(type).contains(m);
@@ -71,7 +73,7 @@ public class MessageBusImpl implements MessageBus {
 	}
 
 	@Override
-	public synchronized void sendBroadcast(Broadcast b) {
+	public void sendBroadcast(Broadcast b) {
 		for(MicroService m : broadcastsListsOfServices.get(b.getClass())){ // for each microservice in b type, add b to its queue.
 			microservicesQueus.get(m).add(b);
 		}
@@ -97,12 +99,12 @@ public class MessageBusImpl implements MessageBus {
 
 	@Override
 	public synchronized void unregister(MicroService m) {
-		// need to deal with the references related to this microservice
+		// TODO: need to deal with the references related to this microservice
 			microservicesQueus.remove(m);
 	}
 
 	@Override
-	public synchronized Message awaitMessage(MicroService m) throws InterruptedException {
+	public Message awaitMessage(MicroService m) throws InterruptedException {
 		return microservicesQueus.get(m).take();
 	}
 

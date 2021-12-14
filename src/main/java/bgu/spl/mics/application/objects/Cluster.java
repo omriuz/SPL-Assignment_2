@@ -28,7 +28,6 @@ public class Cluster {
 		private static Cluster instance = new Cluster();
 	}
 
-
 	private Cluster(){
 		unprocessed = new LinkedBlockingQueue<>();
 		this.CPUs = new LinkedList<>();
@@ -39,7 +38,9 @@ public class Cluster {
 	public static Cluster getInstance() {
 		return Cluster.SingeltonHolder.instance;
 	}
-
+	public void addGPU(GPU gpu){
+		GPUsDataQueues.putIfAbsent(gpu,new LinkedBlockingQueue<>());
+	}
 	public void sendDataBatchToCluster(DataBatch batch){
 			unprocessed.add(batch);
 	}
