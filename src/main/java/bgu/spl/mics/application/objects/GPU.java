@@ -40,9 +40,9 @@ public class GPU {
      * @param type is the type of the GPU.
      * @param cluster is the cluster of the GPU.
      */
-    public GPU(Type type,Cluster cluster){
+    public GPU(Type type){
         this.type = type;
-        this.cluster = cluster;
+        this.cluster = Cluster.getInstance();
         this.status = Status.AVAILABLE;
         if(this.type == Type.RTX2080) {memoryLimit = 16;speed = 2;}
         else if (this.type == Type.RTX3090) {memoryLimit = 32;speed=1;}
