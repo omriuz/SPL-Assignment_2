@@ -46,5 +46,7 @@ public class Model {
     public Student getStudent() {
         return student;
     }
+
+    public void setStatus(Status status){this.status = status;}
 }
 

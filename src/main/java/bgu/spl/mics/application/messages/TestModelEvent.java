@@ -3,29 +3,23 @@ package bgu.spl.mics.application.messages;
 import bgu.spl.mics.Event;
 import bgu.spl.mics.application.objects.Model;
 
-public class TestModelEvent implements Event<String> {
+public class TestModelEvent implements Event<Model.Results> {
     private final Model model;
-    private Boolean tested;
-    private String results;
+    private Model.Results results;
 
     public TestModelEvent(Model model) {
         this.model = model;
-        this.tested = false;
-        results = "None";
+        results = Model.Results.None;
     }
 
     public Model getModel() {
         return model;
     }
 
-    public Boolean getTested() {
-        return tested;
-    }
-
-    public String getResults() {
+    public Model.Results getResults() {
         return results;
     }
-    public void setResults(String newResult){
+    public void setResults(Model.Results newResult){
         this.results = newResult;
     }
 

@@ -17,6 +17,7 @@ public class CPU {
     private DataBatch dataBatch;
     private final Cluster cluster;
     private int processTickCounter;
+    private int ticksToProcess;
 //    private CPUService CPUService;
 
     public CPU (int cores_num){
@@ -35,12 +36,19 @@ public class CPU {
         return dataBatch == null;
     }
 
+
+    private void setTicksToProcess(){
+        int factor = 32/cores;
+        ticksToProcess = factor*DataTypeToInt(dataBatch.getData().getType());
+
+    }
     /**
     * @pre @param data != null
     * @post @pre NPDataBatches.size()+ @param data.size()==this.NPDataBatches.size()
     */
     public void addDataBatch(DataBatch dataBatch){
         this.dataBatch = dataBatch;
+        setTicksToProcess();
     }
     /**
      * @pre this.NPDataBatches.size() > 0
@@ -54,12 +62,9 @@ public class CPU {
         return ans;
     }
     private boolean finishProcess(){
-        boolean ans = false;
-        int factor = 32/cores;
-        if(processTickCounter >= factor*DataTypeToInt(dataBatch.getData().getType())) ans = true;
-
-        return ans;
+        return processTickCounter >= ticksToProcess;
     }
+
     public void process(){
         processTickCounter++;
         if(finishProcess()){

@@ -8,13 +8,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class PublishConferenceBroadcast implements Broadcast {
-    private List<Model> modelsToPublish;
+    private List<String> modelsToPublish;
 
     public PublishConferenceBroadcast(){
         this.modelsToPublish = new LinkedList<>();
     }
 
-    public List<Model> getModelsToPublish(){
+    public List<String> getModelsToPublish(){
         return this.modelsToPublish;
     }
 
