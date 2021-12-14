@@ -6,16 +6,18 @@ import bgu.spl.mics.application.objects.Model;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class PublishConferenceBroadcast implements Broadcast {
-    private List<String> modelsToPublish;
 
-    public PublishConferenceBroadcast(){
-        this.modelsToPublish = new LinkedList<>();
+    private ConcurrentLinkedQueue<String> modelNames;
+
+    public PublishConferenceBroadcast(ConcurrentLinkedQueue<String> names){
+        this.modelNames = names;
     }
 
-    public List<String> getModelsToPublish(){
-        return this.modelsToPublish;
+    public ConcurrentLinkedQueue<String> getModelsToPublish(){
+        return this.modelNames;
     }
 
 }

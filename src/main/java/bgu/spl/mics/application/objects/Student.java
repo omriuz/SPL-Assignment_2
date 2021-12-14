@@ -17,7 +17,7 @@ public class Student {
     public enum Degree {
         MSc, PhD
     }
-     private int name;
+    private String name;
     private String department;
     private Degree degStatus;
     private int publications;
@@ -26,24 +26,23 @@ public class Student {
     private Future future;
     private int currentModel;
     private Boolean finished;
-    private List<String> publishedModels;
-
-
-
-    public Student(int name, String department, Degree degree) {
+    private List<String> publishedModelNames;
+    private HashSet<Model> trainedModels;
+    private HashSet<Model> publishedModels;
+    public Student(String name, String department, Degree degree) {
         this.name = name;
         this.department = department;
         this.degStatus = degree;
         this.publications = 0;
         this.papersRead = 0;
         this.models = new LinkedList<>();
-        this.publishedModels = new LinkedList<>();
+        this.publishedModelNames = new LinkedList<>();
         this.future = null;
         this.currentModel = 0;
         this.finished = false;
     }
 
-    public int getName() {
+    public String getName() {
         return name;
     }
     public String getDepartment() {
@@ -63,9 +62,10 @@ public class Student {
     }
     public <T> Future<T> getFuture(){ return future;}
     public <T> void setFuture(Future<T> future){this.future = future;}
-    public List<String> getPublishedModels(){return publishedModels;}
-    public void addPublishedModel(String modelName){
-        publishedModels.add(modelName);
+    public List<String> getPublishedModelNames(){return publishedModelNames;}
+    public void addPublishedModel(Model model){
+        publishedModels.add(model);
+        publishedModelNames.add(model.getName());
     }
     public void incPublications() {
         this.publications++;
@@ -86,12 +86,20 @@ public class Student {
         }
         return returnModel;
     }
-
-
     public void addModel(Model model){
         models.add(model);
     }
     public Boolean isFinished(){
         return finished;
+    }
+    public void addTrainedModel(Model model){
+        trainedModels.add(model);
+    }
+    public HashSet<Model> getTrainedModels() {
+        return trainedModels;
+    }
+
+    public HashSet<Model> getPublishedModels() {
+        return publishedModels;
     }
 }

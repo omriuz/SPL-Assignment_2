@@ -1,14 +1,12 @@
 package bgu.spl.mics.application.services;
 
-import bgu.spl.mics.Broadcast;
 import bgu.spl.mics.Event;
-import bgu.spl.mics.Future;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.objects.Model;
 import bgu.spl.mics.application.objects.Student;
 
-import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Student is responsible for sending the {@link TrainModelEvent},
@@ -21,20 +19,15 @@ import java.util.LinkedList;
  */
 public class StudentService extends MicroService {
     Student student;
-    Model curentModel;
+    Model currentModel;
     public StudentService(String name, Student student) {
         super(name);
         this.student = student;
-        this.curentModel = student.getNextModel();
+        this.currentModel = student.getNextModel();
     }
-    /*
-        protected final <T, E extends Event<T>> void subscribeEvent(Class<E> type, Callback<E> callback) {
-        callbacksMap.putIfAbsent(type,callback);
-        bus.subscribeEvent(type,this);
-    }
-     */
+
     private Event<Boolean> buildTrain(){
-        Event event = new TrainModelEvent(curentModel);
+        Event event = new TrainModelEvent(currentModel);
         return event;
     }
     private void sendTrain(){
@@ -42,7 +35,7 @@ public class StudentService extends MicroService {
     }
 
     private Event<Model.Results> buildTest(){
-        Event event = new TestModelEvent(curentModel);
+        Event event = new TestModelEvent(currentModel);
         return event;
     }
 
@@ -51,18 +44,18 @@ public class StudentService extends MicroService {
     }
 
     private void sendResult(){
-        student.addPublishedModel(curentModel.getName());
+        student.addPublishedModel(currentModel);
         getBus().sendEvent(buildResult());
     }
     private Event<Boolean> buildResult(){
-        Event publishResult = new PublishResultsEvent(curentModel.getName());
+        Event publishResult = new PublishResultsEvent(currentModel.getName());
         return publishResult;
     }
     private void subscribe(){
         subscribeBroadcast(PublishConferenceBroadcast.class, (message)->{
-            LinkedList<String> publishedModels = (LinkedList<String>) message.getModelsToPublish();
+            ConcurrentLinkedQueue<String> publishedModels = message.getModelsToPublish();
             for(String modelName : publishedModels){
-                if(student.getPublishedModels().contains(modelName)){
+                if(student.getPublishedModelNames().contains(modelName)){
                     student.incPublications();
                 }else{
                     student.incPapersRead();
@@ -72,18 +65,18 @@ public class StudentService extends MicroService {
 
         subscribeBroadcast(TickBroadcast.class, t->{
             if(student.isFinished());
-            else if(curentModel.getStatus() == Model.Status.PreTrained){
+            else if(currentModel.getStatus() == Model.Status.PreTrained){
                 sendTrain();
             }
-            else if(curentModel.getStatus() == Model.Status.Training){
+            else if(currentModel.getStatus() == Model.Status.Training){
                 Boolean trainResult = (Boolean)student.getFuture().get(); // need to be timed get()
                 if(trainResult){
                     sendTest();
                 }
-            }else if(curentModel.getStatus() == Model.Status.Trained){
+            }else if(currentModel.getStatus() == Model.Status.Trained){
                 Model.Results testResult = (Model.Results)student.getFuture().get();
                 if(testResult == Model.Results.Good){
-                    curentModel = student.getNextModel();
+                    currentModel = student.getNextModel();
                     sendResult();
                 }else if(testResult == Model.Results.Bad){
                     sendTrain();

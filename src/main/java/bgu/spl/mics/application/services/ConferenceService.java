@@ -1,6 +1,13 @@
 package bgu.spl.mics.application.services;
 
+import bgu.spl.mics.Callback;
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.PublishConferenceBroadcast;
+import bgu.spl.mics.application.messages.PublishResultsEvent;
+import bgu.spl.mics.application.messages.TickBroadcast;
+import bgu.spl.mics.application.objects.ConfrenceInformation;
+
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Conference service is in charge of
@@ -12,14 +19,32 @@ import bgu.spl.mics.MicroService;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class ConferenceService extends MicroService {
-    Linked
-    public ConferenceService(String name) {
-        super("Change_This_Name");
-    }
+    ConcurrentLinkedQueue<String> names ;
+    ConfrenceInformation confrenceInformation;
+    Callback<TickBroadcast> tickBroadcastCallback;
+    Callback<PublishResultsEvent> publishResultsEventCallback;
 
+    public ConferenceService(ConfrenceInformation confrenceInformation) {
+        super(confrenceInformation.getName());
+        this.confrenceInformation = confrenceInformation;
+        this.confrenceInformation.setConferenceService(this);
+        this.names = new ConcurrentLinkedQueue();
+        publishResultsEventCallback =(PublishResultsEvent event)->{
+            names.add(event.getModelName());
+        };
+        tickBroadcastCallback = (TickBroadcast tickBroadcast)->{
+            if(tickBroadcast.getTime()>=this.confrenceInformation.getDate())
+                sendBroadcast(new PublishConferenceBroadcast(names));
+        };
+    }
     @Override
     protected void initialize() {
-        // TODO Implement this
+        subscribeEvent(PublishResultsEvent.class,publishResultsEventCallback);
+        subscribeBroadcast(TickBroadcast.class,tickBroadcastCallback);
 
+    }
+
+    public ConcurrentLinkedQueue<String> getNames() {
+        return names;
     }
 }

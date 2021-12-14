@@ -1,6 +1,5 @@
 package bgu.spl.mics;
 import java.lang.Override;
-import java.util.Queue;
 import java.util.Vector;
 import java.util.concurrent.*;
 
@@ -15,8 +14,8 @@ public class MessageBusImpl implements MessageBus {
 	private ConcurrentMap<MicroService, BlockingQueue<Message>> microservicesQueus;
 	private ConcurrentMap<Event, Future> eventsFutures;
 
-	private static class SingeltonHolder{
-		private static MessageBusImpl instance = new MessageBusImpl();
+	private static class SingletonHolder {
+		private static final MessageBusImpl instance = new MessageBusImpl();
 	}
 	private MessageBusImpl(){
 		this.eventsQueuesOfServices = new ConcurrentHashMap<>();
@@ -24,8 +23,8 @@ public class MessageBusImpl implements MessageBus {
 		this.microservicesQueus = new ConcurrentHashMap<>();
 		this.eventsFutures = new ConcurrentHashMap<>();
 	}
-	public static MessageBusImpl getInstance(){
-		return SingeltonHolder.instance;
+	public static synchronized MessageBusImpl getInstance(){
+		return SingletonHolder.instance;
 	}
 
 	private void addFuture(Event e, Future future){
@@ -51,14 +50,14 @@ public class MessageBusImpl implements MessageBus {
 	}
 
 	@Override
-	public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
+	public synchronized  <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
 
 		eventsQueuesOfServices.putIfAbsent(type, new LinkedBlockingDeque<>());
 		eventsQueuesOfServices.get(type).add(m); // add m to the Queue
 	}
 
 	@Override
-	public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
+	public synchronized void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
 
 		broadcastsListsOfServices.putIfAbsent(type, new Vector<>());
 		broadcastsListsOfServices.get(type).add(m); // add m to the Queue
@@ -67,19 +66,19 @@ public class MessageBusImpl implements MessageBus {
 
 
 	@Override
-	public <T> void complete(Event<T> e, T result) {
+	public synchronized  <T> void complete(Event<T> e, T result) {
 		eventsFutures.get(e).resolve(result);
 	}
 
 	@Override
-	public void sendBroadcast(Broadcast b) {
+	public synchronized void sendBroadcast(Broadcast b) {
 		for(MicroService m : broadcastsListsOfServices.get(b.getClass())){ // for each microservice in b type, add b to its queue.
 			microservicesQueus.get(m).add(b);
 		}
 	}
 
 	@Override
-	public <T> Future<T> sendEvent(Event<T> e) {
+	public synchronized  <T> Future<T> sendEvent(Event<T> e) {
 		Future<T> future = new Future<>();
 		try {
 			MicroService next = eventsQueuesOfServices.get(e.getClass()).take(); //get the next microservice to deal with e type
@@ -92,18 +91,18 @@ public class MessageBusImpl implements MessageBus {
 	}
 
 	@Override
-	public void register(MicroService m) {
+	public synchronized void register(MicroService m) {
 			microservicesQueus.putIfAbsent(m, new LinkedBlockingDeque<>());
 	}
 
 	@Override
-	public void unregister(MicroService m) {
+	public synchronized void unregister(MicroService m) {
 		// need to deal with the references related to this microservice
 			microservicesQueus.remove(m);
 	}
 
 	@Override
-	public Message awaitMessage(MicroService m) throws InterruptedException {
+	public synchronized Message awaitMessage(MicroService m) throws InterruptedException {
 		return microservicesQueus.get(m).take();
 	}
 

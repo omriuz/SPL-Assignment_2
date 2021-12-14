@@ -9,4 +9,7 @@ public class PublishResultsEvent implements Event<String> {
         this.modelName = modelName;
     }
 
+    public String getModelName() {
+        return modelName;
+    }
 }

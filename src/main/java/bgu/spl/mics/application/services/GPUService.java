@@ -61,6 +61,7 @@ public class GPUService extends MicroService {
         return  null;
     }
     public void completeTrain(){
+
         complete((TrainModelEvent)currentEvent,true);
     }
     public void completeTest(Model.Results result){

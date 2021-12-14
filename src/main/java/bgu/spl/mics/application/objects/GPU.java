@@ -21,7 +21,7 @@ public class GPU {
     /**
      * Enum representing the type of the GPU.
      */
-    enum Type {RTX3090, RTX2080, GTX1080}
+    public enum Type {RTX3090, RTX2080, GTX1080}
     public enum Status {AVAILABLE, TRAINING}
     private final Type type;
     private Status status;
@@ -104,6 +104,8 @@ public class GPU {
         model = null;
         data = null;
         tickCounter = 0;
+        model.setStatus(Model.Status.Trained);
+        model.getStudent().addTrainedModel(model);
         service.completeTrain();
     }
     /**
@@ -130,7 +132,10 @@ public class GPU {
         double num = rand.nextDouble();
         boolean success = degree == Student.Degree.MSc ? num>=0.6 : num>=0.8;
         testModelEvent.getModel().setStatus(Model.Status.Tested);
-        service.completeTest(success ? Model.Results.Good: Model.Results.Bad);
+        Model.Results result = success ? Model.Results.Good: Model.Results.Bad;
+        if(result== Model.Results.Good)
+            testModelEvent.getModel().getStudent().addPublishedModel(testModelEvent.getModel());
+        service.completeTest(result);
 
     }
     public void receiveTickBroadcast(TickBroadcast tickBroadcast){
