@@ -12,9 +12,9 @@ import bgu.spl.mics.MicroService;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class ConferenceService extends MicroService {
+    Linked
     public ConferenceService(String name) {
         super("Change_This_Name");
-        // TODO Implement this
     }
 
     @Override

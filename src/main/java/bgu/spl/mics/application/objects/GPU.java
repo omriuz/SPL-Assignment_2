@@ -1,11 +1,14 @@
 package bgu.spl.mics.application.objects;
 
 import bgu.spl.mics.Callback;
+import bgu.spl.mics.Event;
 import bgu.spl.mics.application.messages.TestModelEvent;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.messages.TrainModelEvent;
+import bgu.spl.mics.application.services.GPUService;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -19,7 +22,7 @@ public class GPU {
      * Enum representing the type of the GPU.
      */
     enum Type {RTX3090, RTX2080, GTX1080}
-    public enum Status {AVAILABLE, TRAINING, TESTING}
+    public enum Status {AVAILABLE, TRAINING}
     private final Type type;
     private Status status;
     private Model model;
@@ -31,6 +34,7 @@ public class GPU {
     private int numberOfBatchesSent;
     private BlockingQueue<DataBatch> processedData;
     private DataBatch curr;
+    private GPUService service;
     /**
      * constructor of GPU
      * @param type is the type of the GPU.
@@ -100,10 +104,11 @@ public class GPU {
         model = null;
         data = null;
         tickCounter = 0;
+        service.completeTrain();
     }
     /**
      * gets the trainModel from the GPUService.
-     * @param model is the model the gpu will be processing.
+     * @param trainModelEvent is the TrainModelEvent the gpu will be processing.
      * @pre this.data == null
      * @post this.data !=null
      */
@@ -113,14 +118,32 @@ public class GPU {
         numberOfBatchesSent = 0;
         tickCounter = 0;
         status = Status.TRAINING;
+        model.setStatus(Model.Status.Training);
     }
     /**
      * @post:   model.getStatus()=="Tested" && (model.getResults()=="good" || model.getResults()=="bad")
-     * @param model
+     * @param
      */
-    public void receiveTestModel(TestModelEvent testModelEvent){throw new NotImplementedException();}
+    public void receiveTestModel(TestModelEvent testModelEvent){
+        Student.Degree degree = testModelEvent.getModel().getStudent().getDegStatus();
+        Random rand = new Random();
+        double num = rand.nextDouble();
+        boolean success = degree == Student.Degree.MSc ? num>=0.6 : num>=0.8;
+        testModelEvent.getModel().setStatus(Model.Status.Tested);
+        service.completeTest(success ? Model.Results.Good: Model.Results.Bad);
+
+    }
     public void receiveTickBroadcast(TickBroadcast tickBroadcast){
-        if(status==Status.TRAINING){
+        if(status == Status.AVAILABLE){
+            Event e = service.getTaskFromQueue();
+            if(e.getClass()==TrainModelEvent.class){
+                receiveTrainModel((TrainModelEvent) e);
+            }
+            else if(e.getClass() == TestModelEvent.class){
+                receiveTestModel((TestModelEvent) e);
+            }
+        }
+        else if(status==Status.TRAINING){
             tickCounter++;
             if((data.getProcessed()<data.getSize())) {
                 sendDataBatch();
@@ -129,9 +152,6 @@ public class GPU {
             }
             else
                 completeTraining();
-        }
-        if(status == Status.TESTING){
-
         }
 
     }
@@ -143,6 +163,9 @@ public class GPU {
         return status;
     }
     public Callback<TickBroadcast> getTickHandle(){
-        return this::receiveTickBroadcast;
+        return (TickBroadcast tickBroadcast)->{receiveTickBroadcast(tickBroadcast);};
+    }
+    public void setService(GPUService service){
+        this.service = service;
     }
 }

@@ -8,10 +8,14 @@ import bgu.spl.mics.application.messages.TestModelEvent;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.messages.TrainModelEvent;
 import bgu.spl.mics.application.objects.GPU;
+import bgu.spl.mics.application.objects.Model;
 import org.junit.Test;
 
+import javax.jws.WebParam;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * GPU service is responsible for handling the
@@ -24,22 +28,21 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class GPUService extends MicroService {
     private GPU gpu;
-    private ConcurrentLinkedQueue<Event> events;
     private Callback<TrainModelEvent> handleTrainModel;
     private Callback<TestModelEvent> handleTestModel ;
     private Callback<TickBroadcast> handleTick;
-    public GPUService(String name) {
+    private LinkedBlockingDeque <Event> studentEvents;
+    private Event currentEvent;
+    public GPUService(String name, GPU gpu) {
         super("GPUService");
-        events = new ConcurrentLinkedQueue<>();
+        this.gpu = gpu;
+        gpu.setService(this);
+        studentEvents = new LinkedBlockingDeque<>();
         handleTrainModel = (TrainModelEvent trainModelEvent)->{
-            events.add(trainModelEvent);
-            if(gpu.getStatus() == GPU.Status.AVAILABLE)
-                gpu.receiveTrainModel((TrainModelEvent) events.poll());
+            studentEvents.addLast(trainModelEvent);
         };
         handleTestModel = (TestModelEvent testModelEvent)->{
-            events.add(testModelEvent);
-            if(gpu.getStatus() == GPU.Status.AVAILABLE)
-                gpu.receiveTestModel((TestModelEvent) events.poll());
+            studentEvents.addFirst(testModelEvent);
         };
         handleTick = gpu.getTickHandle();
     }
@@ -48,6 +51,20 @@ public class GPUService extends MicroService {
         subscribeEvent(TrainModelEvent.class,handleTrainModel);
         subscribeEvent(TestModelEvent.class,handleTestModel);
         subscribeBroadcast(TickBroadcast.class,handleTick);
+    }
+    public Event getTaskFromQueue(){
+        try {
+            currentEvent = studentEvents.take();
+            return currentEvent;
+        }
+        catch (InterruptedException e){}
+        return  null;
+    }
+    public void completeTrain(){
+        complete((TrainModelEvent)currentEvent,true);
+    }
+    public void completeTest(Model.Results result){
+        complete((TestModelEvent)currentEvent,result);
     }
 
 }
