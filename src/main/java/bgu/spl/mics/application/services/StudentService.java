@@ -7,6 +7,7 @@ import bgu.spl.mics.application.objects.Model;
 import bgu.spl.mics.application.objects.Student;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Student is responsible for sending the {@link TrainModelEvent},
@@ -31,6 +32,7 @@ public class StudentService extends MicroService {
         return event;
     }
     private void sendTrain(){
+        currentModel.setStatus(Model.Status.Training);
         student.setFuture(getBus().sendEvent(buildTrain()));
     }
 
@@ -64,13 +66,13 @@ public class StudentService extends MicroService {
         });
 
         subscribeBroadcast(TickBroadcast.class, t->{
-            if(student.isFinished());
-            else if(currentModel.getStatus() == Model.Status.PreTrained){
+//            if(student.isFinished()){;}
+            if(currentModel.getStatus() == Model.Status.PreTrained){
                 sendTrain();
             }
             else if(currentModel.getStatus() == Model.Status.Training){
-                Boolean trainResult = (Boolean)student.getFuture().get(); // need to be timed get()
-                if(trainResult){
+                Boolean trainResult = (Boolean)student.getFuture().get(1, TimeUnit.MILLISECONDS); // need to be timed get()
+                if(trainResult!=null){
                     sendTest();
                 }
             }else if(currentModel.getStatus() == Model.Status.Trained){
@@ -88,6 +90,6 @@ public class StudentService extends MicroService {
     @Override
     protected void initialize() {
         subscribe();
-        sendTrain();
+//        sendTrain();
     }
 }
