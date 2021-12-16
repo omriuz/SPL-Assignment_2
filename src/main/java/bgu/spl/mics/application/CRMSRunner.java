@@ -25,34 +25,40 @@ public class CRMSRunner {
     public static AtomicInteger amountOfBatches = new AtomicInteger(0);
 
     public static void main(String[] args) throws InterruptedException {
-//        List<Student> students = new LinkedList<Student>();
-//        List<ConfrenceInformation> confrences = new LinkedList<>();
-//        List<GPU> gpus = new LinkedList<>();
-//        List<CPU> cpus = new LinkedList<>();
 ////        Student firstStudent = new Student("Simba","Computer Science", Student.Degree.MSc);
 ////        Model firstModel = new Model("YOLO10",new Data(Data.Type.Images,200000),firstStudent);
 ////        firstStudent.addModel(firstModel);
-////        StudentService firstStudentService = new StudentService("first",firstStudent);
+
 //        GPU firstGpu = new GPU(GPU.Type.RTX3090);
-//        GPUService firstGpuService = new GPUService("first",firstGpu);
+
 //        CPU cpu = new CPU(32);
-//        CPUService firstCPUtService = new CPUService("first",cpu);
+
 //        ConfrenceInformation first = new ConfrenceInformation("ICML",2000);
-//        ConferenceService conferenceService = new ConferenceService(first);
-//        TimeService timer = new TimeService(5500,1);
-//        Thread gpu = new Thread(firstGpuService,"GPU");
-//        Thread cpu1 = new Thread(firstCPUtService,"CPU");
-//        Thread conf1 = new Thread(conferenceService,"Conference");
-////        Thread student1 = new Thread(firstStudentService,"Student");
-//        Thread timing = new Thread(timer,"timing");
-//        gpu.start();
-//        cpu1.start();
-//        conf1.start();
-////        student1.start();
-//        timing.start();
-////        students.add(firstStudent);
-////        confrences.add(first);
+
+
+
 //        createOutputFile(getOutputString(students,confrences,gpuTime.get(),cpuTime.get(),amountOfBatches.get()));
+        //TODO: check path before submission
+        JsonObject input = buildJSONObject("C:\\Users\\omri9\\Documents\\GitHub\\Assignment_2\\example_input.json");
+        List<Student> students = BuildStudents(input);
+        List<ConfrenceInformation> conferences = BuildConferences(input);
+        List<GPU> gpus = BuildGPUs(input);
+        List<CPU> cpus = BuildCPUs(input);
+        GPUService firstGpuService = new GPUService("first",gpus.get(0));
+        CPUService firstCPUtService = new CPUService("first",cpus.get(0));
+        ConferenceService conferenceService = new ConferenceService(conferences.get(0));
+        StudentService firstStudentService = new StudentService("first",students.get(0));
+        TimeService timer = BuildTimeService(input);
+        Thread gpu = new Thread(firstGpuService,"GPU");
+        Thread cpu1 = new Thread(firstCPUtService,"CPU");
+        Thread conf1 = new Thread(conferenceService,"Conference");
+        Thread student1 = new Thread(firstStudentService,"Student");
+        Thread timing = new Thread(timer,"timing");
+        gpu.start();
+        cpu1.start();
+        conf1.start();
+        student1.start();
+        timing.start();
     }
 
     public static String getOutputString(List<Student> students, List<ConfrenceInformation> confs, int gpuTime,int cpuTime, int amountOfBatches){

@@ -143,26 +143,28 @@ public class GPU {
      * @param
      */
     public void receiveTestModel(TestModelEvent testModelEvent){
-        System.out.println("Received test model - " + model.getName());
+        System.out.println("Received test model - ");
         Student.Degree degree = testModelEvent.getModel().getStudent().getDegStatus();
         Random rand = new Random();
         double num = rand.nextDouble();
         boolean success = degree == Student.Degree.MSc ? num>=0.6 : num>=0.8;
         testModelEvent.getModel().setStatus(Model.Status.Tested);
-        Model.Results result = success ? Model.Results.Good: Model.Results.Bad;
-        if(result== Model.Results.Good)
+        if(success)
             testModelEvent.getModel().getStudent().addPublishedModel(testModelEvent.getModel());
-        service.completeTest(result);
+        service.completeTest(success);
 
     }
     public void receiveTickBroadcast(TickBroadcast tickBroadcast){
+//        System.out.println("recevied tickBroadcast");
         if(status == Status.AVAILABLE){
-            Event e = service.getTaskFromQueue();
-            if(e.getClass()==TrainModelEvent.class){
-                receiveTrainModel((TrainModelEvent) e);
-            }
-            else if(e.getClass() == TestModelEvent.class){
-                receiveTestModel((TestModelEvent) e);
+            Event e = null;
+            if(service.hasTaskInQueue()) {
+                e = service.getTaskFromQueue();
+                if (e.getClass() == TrainModelEvent.class) {
+                    receiveTrainModel((TrainModelEvent) e);
+                } else if (e.getClass() == TestModelEvent.class) {
+                    receiveTestModel((TestModelEvent) e);
+                }
             }
         }
         else if(status==Status.TRAINING){

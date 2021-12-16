@@ -40,7 +40,8 @@ public class Student {
         this.future = null;
         this.currentModel = 0;
         this.finished = false;
-
+        this.trainedModels = new HashSet<>();
+        this.publishedModels = new HashSet<>();
         for(Model m : models)
             m.setStudent(this);
     }
@@ -84,14 +85,16 @@ public class Student {
         this.papersRead++;
     }
     public Model getNextModel(){
-        Model returnModel;
+        Model returnModel=null;
         if(finished)
             returnModel = null;
         else {
-            returnModel = models.get(currentModel);
-            currentModel++;
-            if (currentModel >= models.size()) {
+            if (currentModel == models.size()) {
                 finished = true;
+            }
+            else {
+                returnModel = models.get(currentModel);
+                currentModel++;
             }
         }
         return returnModel;

@@ -54,7 +54,8 @@ public class GPUService extends MicroService {
     }
     public Event getTaskFromQueue(){
         try {
-            currentEvent = studentEvents.take();
+            this.currentEvent = studentEvents.take();
+            System.out.println(studentEvents.peek());
             return currentEvent;
         }
         catch (InterruptedException e){}
@@ -64,8 +65,11 @@ public class GPUService extends MicroService {
 
         complete((TrainModelEvent)currentEvent,true);
     }
-    public void completeTest(Model.Results result){
+    public void completeTest(Boolean result){
         complete((TestModelEvent)currentEvent,result);
+    }
+    public boolean hasTaskInQueue(){
+        return !studentEvents.isEmpty();
     }
 
 }

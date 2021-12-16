@@ -40,6 +40,7 @@ public class TimeService extends MicroService{
 		TimerTask tickTask = new TimerTask(){
 			public void run(){
 				if(currentTime<=duration) {
+					System.out.println(currentTime);
 					sendBroadcast(new TickBroadcast(currentTime));
 					currentTime += speed;
 				}
