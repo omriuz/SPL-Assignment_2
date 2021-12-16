@@ -19,7 +19,7 @@ public class Student {
     }
     private String name;
     private String department;
-    private Degree degStatus;
+    private Degree status;
     private int publications;
     private int papersRead;
     private List<Model> models;
@@ -29,17 +29,32 @@ public class Student {
     private List<String> publishedModelNames;
     private HashSet<Model> trainedModels;
     private HashSet<Model> publishedModels;
-    public Student(String name, String department, Degree degree) {
+
+    public Student(){};
+
+    public Student(String name, String department, String status, List<Model> models) {
         this.name = name;
         this.department = department;
-        this.degStatus = degree;
+        this.status = stringToDegree(status);
         this.publications = 0;
         this.papersRead = 0;
-        this.models = new LinkedList<>();
+        this.models = models;
         this.publishedModelNames = new LinkedList<>();
         this.future = null;
         this.currentModel = 0;
         this.finished = false;
+
+        for(Model m : models)
+            m.setStudent(this);
+    }
+
+    private Degree stringToDegree(String status){
+        Degree degStatus = null;
+        if(status == "MSc")
+            degStatus = Degree.MSc;
+        else if(status == "PhD")
+            degStatus = Degree.PhD;
+        return degStatus;
     }
 
     public String getName() {
@@ -49,7 +64,7 @@ public class Student {
         return department;
     }
     public Degree getDegStatus() {
-        return degStatus;
+        return status;
     }
     public int getPublications() {
         return publications;
@@ -101,5 +116,24 @@ public class Student {
 
     public HashSet<Model> getPublishedModels() {
         return publishedModels;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public Degree getStatus() {
+        return status;
+    }
+
+    public void setStatus(Degree status) {
+        this.status = status;
+    }
+
+    public void setModels(List<Model> models) {
+        this.models = models;
     }
 }

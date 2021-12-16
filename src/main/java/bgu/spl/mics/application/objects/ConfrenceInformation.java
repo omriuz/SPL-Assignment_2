@@ -18,6 +18,15 @@ public class ConfrenceInformation {
         this.name = name;
         this.date = date;
     }
+    public ConfrenceInformation(){}
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDate(int date) {
+        this.date = date;
+    }
 
     public String getName() {
         return name;

@@ -88,6 +88,6 @@ public class StudentService extends MicroService {
     @Override
     protected void initialize() {
         subscribe();
-        sendTrain();
+        currentModel = student.getNextModel();
     }
 }

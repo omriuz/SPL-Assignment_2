@@ -23,14 +23,14 @@ public class GPU {
      */
     public enum Type {RTX3090, RTX2080, GTX1080}
     public enum Status {AVAILABLE, TRAINING}
-    private final Type type;
+    private  Type type;
     private Status status;
     private Model model;
     private Data data;
-    private final Cluster cluster;
+    private  Cluster cluster;
     private int tickCounter;
-    private final int memoryLimit;
-    private final int speed;
+    private  int memoryLimit;
+    private  int speed;
     private int numberOfBatchesSent;
     private BlockingQueue<DataBatch> processedData;
     private DataBatch curr;
@@ -40,14 +40,27 @@ public class GPU {
      * @param type is the type of the GPU.
      * @param cluster is the cluster of the GPU.
      */
-    public GPU(Type type){
-        this.type = type;
+    public GPU(){}
+
+    public GPU(String type){
+        this.type = stringToType(type);
         this.cluster = Cluster.getInstance();
         this.status = Status.AVAILABLE;
         if(this.type == Type.RTX2080) {memoryLimit = 16;speed = 2;}
         else if (this.type == Type.RTX3090) {memoryLimit = 32;speed=1;}
         else {memoryLimit = 8 ; speed=4;}
         processedData = new LinkedBlockingQueue<>(memoryLimit);
+    }
+
+    private Type stringToType(String sType){
+        Type type = null;
+        if(sType == "RTX3090")
+            type = Type.RTX3090;
+        else if(sType == "RTX2080")
+            type = Type.RTX2080;
+        else if(sType == "GTX1080")
+            type = Type.GTX1080;
+        return type;
     }
 
     /**
@@ -172,5 +185,12 @@ public class GPU {
     }
     public void setService(GPUService service){
         this.service = service;
+    }
+
+    public Type getType() {
+        return type;
+    }
+    public void setType(Type type) {
+        this.type = type;
     }
 }

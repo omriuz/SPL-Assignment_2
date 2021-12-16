@@ -15,7 +15,7 @@ import java.util.Queue;
 public class CPU {
     private int cores;
     private DataBatch dataBatch;
-    private final Cluster cluster;
+    private  Cluster cluster;
     private int processTickCounter;
     private int ticksToProcess;
 //    private CPUService CPUService;
@@ -26,6 +26,7 @@ public class CPU {
         this.cluster = Cluster.getInstance();
         this.processTickCounter = 0;
     }
+    public CPU(){}
     public Cluster getCluster() {
         return cluster;
     }
@@ -80,8 +81,7 @@ public class CPU {
      */
     public Collection<DataBatch> returnProcessedData(){throw new NotImplementedException();}
 
-
-
-
-
+    public void setCores(int cores) {
+        this.cores = cores;
+    }
 }
