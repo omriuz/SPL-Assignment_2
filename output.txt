@@ -1,0 +1,4 @@
+
+CPU Time: 0
+GPU Time: 0
+Amount of batches: 0
