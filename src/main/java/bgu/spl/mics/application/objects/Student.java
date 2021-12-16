@@ -29,21 +29,29 @@ public class Student {
     private List<String> publishedModelNames;
     private HashSet<Model> trainedModels;
     private HashSet<Model> publishedModels;
-    public Student(String name, String department, Degree degree) {
+    public Student(String name, String department, String status, List<Model> models) {
         this.name = name;
         this.department = department;
-        this.degStatus = degree;
+        this.degStatus = stringToDegree(status);
         this.publications = 0;
         this.papersRead = 0;
-        this.models = new LinkedList<>();
+        this.models = models;
         this.publishedModelNames = new LinkedList<>();
         this.future = null;
         this.currentModel = 0;
         this.finished = false;
-        this.trainedModels = new HashSet<>();
-        this.publishedModels = new HashSet<>();
-    }
 
+        for(Model m : models)
+            m.setStudent(this);
+    }
+    private Degree stringToDegree(String status){
+        Degree degStatus = null;
+        if(status == "MSc")
+            degStatus = Degree.MSc;
+        else if(status == "PhD")
+            degStatus = Degree.PhD;
+        return degStatus;
+    }
     public String getName() {
         return name;
     }

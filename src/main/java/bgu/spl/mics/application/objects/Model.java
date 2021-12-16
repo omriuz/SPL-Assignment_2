@@ -25,14 +25,23 @@ public class Model {
         return results;
     }
 
-    public Model(String name, Data data, Student student) {
+    public Model(String name, String type, int size) {
         this.name = name;
-        this.data = data;
-        this.student = student;
+        this.data = new Data(stringToDataType(type), size);
+//      this.student = student;
         this.status = Status.PreTrained;
         this.results = Results.None;
     }
-
+    private Data.Type stringToDataType(String type){
+        Data.Type dataType = null;
+        if(type == "Images")
+            dataType = Data.Type.Images;
+        else if(type == "Text")
+            dataType = Data.Type.Text;
+        else if(type == "Tabular")
+            dataType = Data.Type.Tabular;
+        return dataType;
+    }
 
 
     public String getName() {
@@ -48,5 +57,8 @@ public class Model {
     }
 
     public void setStatus(Status status){this.status = status;}
+    public void setStudent(Student student) {
+        this.student = student;
+    }
 }
 

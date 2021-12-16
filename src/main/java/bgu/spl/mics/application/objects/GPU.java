@@ -40,8 +40,8 @@ public class GPU {
      * @param type is the type of the GPU.
      * @param cluster is the cluster of the GPU.
      */
-    public GPU(Type type){
-        this.type = type;
+    public GPU(String type){
+        this.type = stringToType(type);
         this.cluster = Cluster.getInstance();
         this.cluster.addGPU(this);
         this.status = Status.AVAILABLE;
@@ -51,6 +51,16 @@ public class GPU {
         processedData = new LinkedBlockingQueue<>(memoryLimit);
     }
 
+    private Type stringToType(String sType){
+        Type type = null;
+        if(sType == "RTX3090")
+            type = Type.RTX3090;
+        else if(sType == "RTX2080")
+            type = Type.RTX2080;
+        else if(sType == "GTX1080")
+            type = Type.GTX1080;
+        return type;
+    }
     /**
      * this method checks weather the memory limit of the gpu is reached.
      * @return @boolean true if the limit is reached and @boolean false otherwise.
