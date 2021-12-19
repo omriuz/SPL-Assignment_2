@@ -72,7 +72,7 @@ public class StudentService extends MicroService {
             if(student.isFinished()) {//todo:}
             }
             else if(currentModel.getStatus() == Model.Status.PreTrained){
-                System.out.println("sent " + currentModel.getName() + " for training");
+//                System.out.println("sent " + currentModel.getName() + " for training");
                 sendTrain();
             }
             else if(currentModel.getStatus() == Model.Status.Training){

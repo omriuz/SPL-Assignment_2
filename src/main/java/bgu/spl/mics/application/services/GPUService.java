@@ -36,7 +36,7 @@ public class GPUService extends MicroService {
     private LinkedBlockingDeque <Event> studentEvents;
     private Event currentEvent;
     public GPUService(String name, GPU gpu) {
-        super("GPUService");
+        super("GPUService " + name);
         this.gpu = gpu;
         gpu.setService(this);
         studentEvents = new LinkedBlockingDeque<>();
@@ -63,7 +63,6 @@ public class GPUService extends MicroService {
     public Event getTaskFromQueue(){
         try {
             this.currentEvent = studentEvents.take();
-            System.out.println(studentEvents.peek());
             return currentEvent;
         }
         catch (InterruptedException e){}

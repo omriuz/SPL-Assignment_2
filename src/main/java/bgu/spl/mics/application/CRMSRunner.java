@@ -31,7 +31,7 @@ public class CRMSRunner {
 
 //        createOutputFile(getOutputString(students,confrences,gpuTime.get(),cpuTime.get(),amountOfBatches.get()));
         //TODO: check path before submission
-        JsonObject input = buildJSONObject("C:\\Users\\omri9\\Documents\\GitHub\\Assignment_2\\example_input.json");
+        JsonObject input = buildJSONObject("C:\\לימודים\\SPL\\עבודה 2\\assignment2 2\\example_input.json");
         List<Student> students = BuildStudents(input);
         List<ConferenceInformation> conferences = BuildConferences(input);
         List<GPU> gpus = BuildGPUs(input);
@@ -60,6 +60,7 @@ public class CRMSRunner {
         int cpuTime = sumCpuTime(cpus);
         int gpuTime = sumGpuTime(gpus);
         int amountOfBatches = sumAmount(cpus);
+        System.out.println(amountOfBatches + "_______________________" + cpuTime);
         createOutputFile(getOutputString(students,conferences,gpuTime,cpuTime,amountOfBatches));
         System.out.println("finished the program");
 
@@ -108,8 +109,8 @@ public class CRMSRunner {
             ans.append(confDescription + "\n");
         }
         ans.append("In total:\n");
-        ans.append("\n").append("CPU Time: ").append(gpuTime).append("\n");
-        ans.append("GPU Time: ").append(cpuTime).append("\n");
+        ans.append("\n").append("CPU Time: ").append(cpuTime).append("\n");
+        ans.append("GPU Time: ").append(gpuTime).append("\n");
         ans.append("Amount of batches: ").append(amountOfBatches);
         return ans.toString();
 
@@ -159,7 +160,8 @@ public class CRMSRunner {
             String name = modelObject.get("name").getAsString();
             String type = modelObject.get("type").getAsString();
             int size = modelObject.get("size").getAsInt();
-            models.add(new Model(name, type, size));
+            Model model = new Model(name, type, size);
+            models.add(model);
         }
         return models;
     }

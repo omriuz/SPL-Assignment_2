@@ -16,6 +16,8 @@ public class MessageBusImpl implements MessageBus {
 	private ConcurrentMap<Event, Future> eventsFutures;
 	private Object lockBroadcast;
 	private Object lockEvent;
+	private Object lockMicroServices;
+	private Object lockFuture;
 
 	private static class SingletonHolder {
 		private static final MessageBusImpl instance = new MessageBusImpl();
@@ -25,8 +27,11 @@ public class MessageBusImpl implements MessageBus {
 		this.broadcastsListsOfServices = new ConcurrentHashMap<>();
 		this.microservicesQueues = new ConcurrentHashMap<>();
 		this.eventsFutures = new ConcurrentHashMap<>();
-		lockBroadcast = new Object();
-		lockEvent = new Object();
+		this.lockBroadcast = new Object();
+		this.lockEvent = new Object();
+		this.lockMicroServices = new Object();
+		this.lockFuture = new Object();
+
 	}
 	public static MessageBusImpl getInstance(){
 		return SingletonHolder.instance;
@@ -53,53 +58,58 @@ public class MessageBusImpl implements MessageBus {
 	}
 
 	@Override
-	public synchronized  <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
-
-		eventsQueuesOfServices.putIfAbsent(type, new LinkedBlockingDeque<>());
-		eventsQueuesOfServices.get(type).add(m); // add m to the Queue
+	public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
+//		synchronized (lockEvent) {
+			eventsQueuesOfServices.putIfAbsent(type, new LinkedBlockingDeque<>());
+			eventsQueuesOfServices.get(type).add(m); // add m to the Queue
+//		}
 	}
 
 	@Override
-	public synchronized void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
-
-		broadcastsListsOfServices.putIfAbsent(type, new Vector<>());
-		broadcastsListsOfServices.get(type).add(m); // add m to the Queue
+	public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
+//		synchronized (lockBroadcast) {
+			broadcastsListsOfServices.putIfAbsent(type, new Vector<>());
+			broadcastsListsOfServices.get(type).add(m); // add m to the Queue
+//		}
 	}
 
 
 
 	@Override
-	public synchronized  <T> void complete(Event<T> e, T result) {
+	public <T> void complete(Event<T> e, T result) {
 		eventsFutures.get(e).resolve(result);
 	}
 
 	@Override
 	public void sendBroadcast(Broadcast b) {
-		for(MicroService m : broadcastsListsOfServices.get(b.getClass())){ // for each microservice in b type, add b to its queue.
-			microservicesQueues.get(m).add(b);
-		}
+//		synchronized (lockMicroServices) {
+			for (MicroService m : broadcastsListsOfServices.get(b.getClass())) { // for each microservice in b type, add b to its queue.
+				microservicesQueues.get(m).add(b);
+			}
+//		}
 	}
 
 	@Override
-	public synchronized  <T> Future<T> sendEvent(Event<T> e) {
+	public <T> Future<T> sendEvent(Event<T> e) {
 		Future<T> future = new Future<>();
-		try {
-			MicroService next = eventsQueuesOfServices.get(e.getClass()).take(); //get the next microservice to deal with e type
-			microservicesQueues.get(next).put(e); // add e to next queue
-			eventsQueuesOfServices.get(e.getClass()).put(next); // return next the end of the e type queue
-			eventsFutures.put(e,future); // crate a connection between e and the new future
-		}catch (InterruptedException inter){};
-
-		return future;
+			try {
+				MicroService next = eventsQueuesOfServices.get(e.getClass()).take(); //get the next microservice to deal with e type
+				microservicesQueues.get(next).put(e); // add e to next queue
+				eventsQueuesOfServices.get(e.getClass()).put(next); // return next the end of the e type queue
+				eventsFutures.put(e, future); // crate a connection between e and the new future
+			} catch (InterruptedException inter) {
+			}
+			;
+			return future;
 	}
 
 	@Override
-	public synchronized void register(MicroService m) {
+	public void register(MicroService m) {
 			microservicesQueues.putIfAbsent(m, new LinkedBlockingDeque<>());
 	}
 
 	@Override
-	public synchronized void unregister(MicroService m) {
+	public void unregister(MicroService m) {
 		// TODO: need to deal with the references related to this microservice
 			microservicesQueues.remove(m);
 		for(Map.Entry<Class<? extends Event>, BlockingQueue<MicroService>> entry : eventsQueuesOfServices.entrySet()){

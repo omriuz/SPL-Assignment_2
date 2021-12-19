@@ -1,48 +1,38 @@
 Students:
-For Student Simba, from department Computer Science, of Degree status null the trained models are:
-LessEfficientNet, of Type Tabular, of Size 20000
-the status is Tested and it has been Published
-DensestNet, of Type Tabular, of Size 200000
+For Student Simba, from department Computer Science, of Degree status MSc the trained models are:
+YOLO10, of Type Images, of Size 200000
 the status is Trained and it has Not been published
-ResNet9000, of Type Tabular, of Size 200000
-the status is Tested and it has Not been published
-YOLO10, of Type Tabular, of Size 200000
-the status is Tested and it has Not been published
 Number of papers Simba read: 0
 
-For Student Zazu, from department EE, of Degree status null the trained models are:
-Number of papers Zazu read: 60002
+For Student Zazu, from department EE, of Degree status PhD the trained models are:
+Number of papers Zazu read: 35001
 
-For Student Pumba, from department Computer Science, of Degree status null the trained models are:
-Bert, of Type Tabular, of Size 1000000
-the status is Trained and it has Not been published
+For Student Pumba, from department Computer Science, of Degree status PhD the trained models are:
+Bert, of Type Text, of Size 1000000
+the status is Tested and it has been Published
 Number of papers Pumba read: 0
 
-For Student Timon, from department SE, of Degree status null the trained models are:
-GNN, of Type Tabular, of Size 1000000
-the status is Tested and it has Not been published
+For Student Timon, from department SE, of Degree status MSc the trained models are:
 Percepetron, of Type Tabular, of Size 1000000
-the status is Tested and it has been Published
+the status is Training and it has Not been published
 Number of papers Timon read: 35001
 
-For Student Nala, from department Computer Science, of Degree status null the trained models are:
-YOLO9000, of Type Tabular, of Size 100000
-the status is Tested and it has Not been published
-Number of papers Nala read: 60002
+For Student Nala, from department Computer Science, of Degree status PhD the trained models are:
+Number of papers Nala read: 35001
 
 Conferences:
 For Conference ICML the publications are:
-LessEfficientNet 
+GPT4 
 For Conference NeurIPS the publications are:
 
 For Conference CVPR the publications are:
-Percepetron 
+
 For Conference ECCV the publications are:
 
 For Conference AISTATS the publications are:
 
 In total:
 
-CPU Time: 68884
-GPU Time: 107905
-Amount of batches: 68885
+CPU Time: 385007
+GPU Time: 167007
+Amount of batches: 69998

@@ -47,9 +47,9 @@ public class Student {
     }
     private Degree stringToDegree(String status){
         Degree degStatus = null;
-        if(status == "MSc")
+        if(status.equals("MSc"))
             degStatus = Degree.MSc;
-        else if(status == "PhD")
+        else if(status.equals("PhD"))
             degStatus = Degree.PhD;
         return degStatus;
     }

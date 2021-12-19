@@ -43,7 +43,6 @@ public class CPU {
     private void setTicksToProcess(){
         int factor = 32/cores;
         ticksToProcess = factor*DataTypeToInt(dataBatch.getData().getType());
-
     }
     /**
     * @pre @param data != null
@@ -68,6 +67,8 @@ public class CPU {
         return processTickCounter >= ticksToProcess;
     }
 
+
+
     public void process(){
         count++;
         processTickCounter++;
@@ -76,6 +77,7 @@ public class CPU {
             cluster.addProcessedData(dataBatch);
             dataBatch = null;
             processTickCounter = 0;
+//            System.out.println("amount= " + amount + "______________  count= " + count);
         }
     }
 

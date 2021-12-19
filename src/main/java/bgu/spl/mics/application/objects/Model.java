@@ -39,11 +39,11 @@ public class Model {
     }
     private Data.Type stringToDataType(String type){
         Data.Type dataType = null;
-        if(type == "Images")
+        if(type.equals("Images"))
             dataType = Data.Type.Images;
-        else if(type == "Text")
+        else if(type.equals("Text"))
             dataType = Data.Type.Text;
-        else if(type == "Tabular")
+        else if(type.equals("Tabular"))
             dataType = Data.Type.Tabular;
         return dataType;
     }

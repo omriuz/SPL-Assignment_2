@@ -48,7 +48,8 @@ public class Cluster {
 	public DataBatch sendDataBatchToGPU(GPU gpu){
 		DataBatch d = null;
 		try{
-			d = GPUsDataQueues.get(gpu).take();
+			if(!GPUsDataQueues.isEmpty())
+				d = GPUsDataQueues.get(gpu).take();
 		}
 		catch (InterruptedException e) {}
 		return d;

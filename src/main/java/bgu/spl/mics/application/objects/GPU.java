@@ -50,17 +50,18 @@ public class GPU {
         if(this.type == Type.RTX2080) {memoryLimit = 16;speed = 2;}
         else if (this.type == Type.RTX3090) {memoryLimit = 32;speed=1;}
         else {memoryLimit = 8 ; speed=4;}
-        processedData = new LinkedBlockingQueue<>(memoryLimit);
-        count = 0;
+        this.processedData = new LinkedBlockingQueue<>(memoryLimit);
+        this.count = 0;
+        this.numberOfBatchesSent = 0;
     }
 
     private Type stringToType(String sType){
         Type type = null;
-        if(sType == "RTX3090")
+        if(sType.equals("RTX3090"))
             type = Type.RTX3090;
-        else if(sType == "RTX2080")
+        else if(sType.equals("RTX2080"))
             type = Type.RTX2080;
-        else if(sType == "GTX1080")
+        else if(sType.equals("GTX1080"))
             type = Type.GTX1080;
         return type;
     }
@@ -86,8 +87,11 @@ public class GPU {
      * @post: this.processedData.size() <= memoryLimit
      */
     public void receiveDataBatch(){
+        DataBatch dataBatch = null;
         if(cluster.isThereDataBatch(this) && processedData.size()<memoryLimit)
-            processedData.add(cluster.sendDataBatchToGPU(this));
+            dataBatch = cluster.sendDataBatchToGPU(this);
+            if(dataBatch != null)
+                processedData.add(dataBatch);
     }
     /**
      * this function used the processed data it contains to train the model.
@@ -118,7 +122,7 @@ public class GPU {
      * @post the GPUService is informed that the training is finished
      */
     public void completeTraining(){
-        System.out.println("completed training - " +  model.getName());
+//        System.out.println("completed training - " +  model.getName());
         status = Status.AVAILABLE;
         tickCounter = 0;
         model.setStatus(Model.Status.Trained);
@@ -135,7 +139,7 @@ public class GPU {
      */
     public void receiveTrainModel(TrainModelEvent trainModelEvent){
         this.model = trainModelEvent.getModel();
-        System.out.println("Received train model: " +  model.getName());
+//        System.out.println("Received train model: " +  model.getName());
         this.data = model.getData();
         numberOfBatchesSent = 0;
         tickCounter = 0;
@@ -147,7 +151,7 @@ public class GPU {
      * @param
      */
     public void receiveTestModel(TestModelEvent testModelEvent){
-        System.out.println("Received test model - "+ testModelEvent.getModel().getName());
+//        System.out.println("Received test model - "+ testModelEvent.getModel().getName());
         Student.Degree degree = testModelEvent.getModel().getStudent().getDegStatus();
         Random rand = new Random();
         double num = rand.nextDouble();
@@ -171,8 +175,11 @@ public class GPU {
             }
         }
         else if(status==Status.TRAINING){
+            if(numberOfBatchesSent == 0){
+                for(int i =0; i < data.getSize()/1000; i++)
+                    sendDataBatch(); // made the GPU to wait and it's not training
+            }
             if((data.getProcessed()<data.getSize())) {
-                sendDataBatch();
                 receiveDataBatch();
                 trainModel();
             }

@@ -33,7 +33,7 @@ public class TimeService extends MicroService{
 		timer = new Timer();
 		this.duration = duration;
 		this.speed = speed;
-		this.currentTime = 1000;
+		this.currentTime = 0;
 	}
 
 	@Override
