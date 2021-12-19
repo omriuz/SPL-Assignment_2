@@ -10,20 +10,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Scanner;
-
 
 /** This is the Main class of Compute Resources Management System application. You should parse the input file,
  * create the different instances of the objects, and run the system.
  * In the end, you should output a text file.
  */
 public class CRMSRunner {
-    public static AtomicInteger gpuTime = new AtomicInteger(0);
-    public static AtomicInteger cpuTime = new AtomicInteger(0);
-    public static AtomicInteger amountOfBatches = new AtomicInteger(0);
-
     public static void main(String[] args) throws InterruptedException {
 ////        Student firstStudent = new Student("Simba","Computer Science", Student.Degree.MSc);
 ////        Model firstModel = new Model("YOLO10",new Data(Data.Type.Images,200000),firstStudent);
@@ -41,44 +33,81 @@ public class CRMSRunner {
         //TODO: check path before submission
         JsonObject input = buildJSONObject("C:\\Users\\omri9\\Documents\\GitHub\\Assignment_2\\example_input.json");
         List<Student> students = BuildStudents(input);
-        List<ConfrenceInformation> conferences = BuildConferences(input);
+        List<ConferenceInformation> conferences = BuildConferences(input);
         List<GPU> gpus = BuildGPUs(input);
         List<CPU> cpus = BuildCPUs(input);
-        GPUService firstGpuService = new GPUService("first",gpus.get(0));
-        CPUService firstCPUtService = new CPUService("first",cpus.get(0));
-        ConferenceService conferenceService = new ConferenceService(conferences.get(0));
-        StudentService firstStudentService = new StudentService("first",students.get(0));
+        List<GPUService> gpuServices = buildGpuServices(gpus);
+        List<CPUService> cpuServices = buildCpuServices(cpus);
+        List<ConferenceService> conferenceServices = buildConferenceServices(conferences);
+        List<StudentService> studentServices = buildStudentServices(students);
+        List<Thread> threads = new LinkedList<>();
         TimeService timer = BuildTimeService(input);
-        Thread gpu = new Thread(firstGpuService,"GPU");
-        Thread cpu1 = new Thread(firstCPUtService,"CPU");
-        Thread conf1 = new Thread(conferenceService,"Conference");
-        Thread student1 = new Thread(firstStudentService,"Student");
+        for(CPUService service : cpuServices)
+            threads.add(new Thread(service,service.getName()));
+        for(GPUService service : gpuServices)
+            threads.add(new Thread(service,service.getName()));
+        for(ConferenceService service : conferenceServices)
+            threads.add(new Thread(service,service.getName()));
+        for(StudentService service : studentServices)
+            threads.add((new Thread(service,service.getName())));
         Thread timing = new Thread(timer,"timing");
-        gpu.start();
-        cpu1.start();
-        conf1.start();
-        student1.start();
+        for(Thread thread : threads)
+            thread.start();
         timing.start();
+        timing.join();
+        for(Thread thread : threads)
+            thread.interrupt();
+        int cpuTime = sumCpuTime(cpus);
+        int gpuTime = sumGpuTime(gpus);
+        int amountOfBatches = sumAmount(cpus);
+        createOutputFile(getOutputString(students,conferences,gpuTime,cpuTime,amountOfBatches));
+        System.out.println("finished the program");
+
     }
 
-    public static String getOutputString(List<Student> students, List<ConfrenceInformation> confs, int gpuTime,int cpuTime, int amountOfBatches){
+    private static int sumAmount(List<CPU> cpus) {
+        int sum = 0;
+        for(CPU cpu : cpus)
+            sum += cpu.getAmount();
+        return sum;
+    }
+
+    private static int sumGpuTime(List<GPU> gpus) {
+        int sum = 0;
+        for(GPU gpu : gpus)
+            sum += gpu.getCount();
+        return sum;
+    }
+
+    private static int sumCpuTime(List<CPU> cpus) {
+        int sum = 0;
+        for(CPU cpu : cpus)
+            sum += cpu.getCount();
+        return sum;
+    }
+
+    public static String getOutputString(List<Student> students, List<ConferenceInformation> confs, int gpuTime, int cpuTime, int amountOfBatches){
         StringBuilder ans = new StringBuilder();
+        ans.append("Students:\n");
         for(Student student : students){
-            StringBuilder studentDescription = new StringBuilder("For Student " + student.getName() + " Trained models are:\n");
+            StringBuilder studentDescription = new StringBuilder("For Student " + student.getName() +", from department " + student.getDepartment()+", of Degree status ");
+            studentDescription.append(student.getDegStatus()).append(" the trained models are:\n");
             HashSet <Model> published = student.getPublishedModels();
             for( Model m : student.getTrainedModels()){
-                studentDescription.append(m.getName()).append(" ");
-                studentDescription.append(published.contains(m) ? "Published\n" : "Not published\n");
+                studentDescription.append(m.getName()).append(", of Type ").append(m.getData().getTypeName()).append(", of Size ").append(m.getData().getSize());
+                studentDescription.append("\nthe status is: ").append(m.getStatusString());
+                studentDescription.append(" and it has ").append(published.contains(m) ? "been Published\n" : "Not been published\n");
             }
-            studentDescription.append("\n");
-            studentDescription.append("Number of papers read: ").append(student.getPapersRead()).append("\n");
+            studentDescription.append("Number of papers ").append(student.getName()).append(" ").append("read: ").append(student.getPapersRead()).append("\n\n");
             ans.append(studentDescription);
         }
-        for(ConfrenceInformation conf : confs){
+        ans.append("Conferences:\n");
+        for(ConferenceInformation conf : confs){
             StringBuilder confDescription = new StringBuilder("For Conference " + conf.getName() + " the publications are:\n");
             for(String name : conf.getNames()) confDescription.append(name).append(" ");
-            ans.append(confDescription);
+            ans.append(confDescription + "\n");
         }
+        ans.append("In total:\n");
         ans.append("\n").append("CPU Time: ").append(gpuTime).append("\n");
         ans.append("GPU Time: ").append(cpuTime).append("\n");
         ans.append("Amount of batches: ").append(amountOfBatches);
@@ -155,14 +184,14 @@ public class CRMSRunner {
         }
         return CPUs;
     }
-    public static List<ConfrenceInformation> BuildConferences(JsonObject input){
+    public static List<ConferenceInformation> BuildConferences(JsonObject input){
         JsonArray jsonArrayOfConferences = input.getAsJsonArray("Conferences").getAsJsonArray();
-        List<ConfrenceInformation> conferences = new LinkedList<>();
+        List<ConferenceInformation> conferences = new LinkedList<>();
         for(JsonElement conferenceElement : jsonArrayOfConferences){
             JsonObject conferenceObject = conferenceElement.getAsJsonObject();
             String name = conferenceObject.get("name").getAsString();
             int date = conferenceObject.get("date").getAsInt();
-            conferences.add(new ConfrenceInformation(name,date));
+            conferences.add(new ConferenceInformation(name,date));
         }
         return conferences;
     }
@@ -174,5 +203,35 @@ public class CRMSRunner {
         timeService = new TimeService(duration,tickTime);
         return timeService;
     }
+
+    public static List<GPUService> buildGpuServices(List<GPU> gpus){
+        List<GPUService> ans = new LinkedList<>();
+        int counter = 0;
+        for(GPU gpu : gpus)
+            ans.add(new GPUService(String.valueOf(counter++),gpu));
+        return ans;
+    }
+    public static List<CPUService> buildCpuServices(List<CPU> cpus){
+        List<CPUService> ans = new LinkedList<>();
+        int counter = 0;
+        for(CPU cpu : cpus)
+            ans.add(new CPUService(String.valueOf(counter++),cpu));
+        return ans;
+    }
+    public static List<ConferenceService> buildConferenceServices(List<ConferenceInformation> confs){
+        List<ConferenceService> ans = new LinkedList<>();
+        for(ConferenceInformation conf : confs)
+            ans.add(new ConferenceService(conf));
+        return ans;
+    }
+    public static List<StudentService> buildStudentServices(List<Student> students){
+        List<StudentService> ans = new LinkedList<>();
+        int counter = 0;
+        for(Student student : students)
+            ans.add(new StudentService(String.valueOf(counter++),student));
+        return ans;
+    }
+//        StudentService firstStudentService = new StudentService("first",students.get(0));
+
 
 }

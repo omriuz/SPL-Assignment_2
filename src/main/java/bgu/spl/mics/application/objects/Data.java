@@ -35,4 +35,10 @@ public class Data {
     }
 
     public void increaseProcessed(){processed+=1000;}
+    public String getTypeName(){
+        if(type==Type.Images) return "Images";
+        else if(type == Type.Text) return "Text";
+        else
+            return "Tabular";
+    }
 }

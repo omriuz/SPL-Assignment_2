@@ -20,7 +20,12 @@ public class Model {
     public Status getStatus() {
         return status;
     }
-
+    public String getStatusString(){
+        if(status == Status.PreTrained) return "PreTrained";
+        else if(status == Status.Training) return "Training";
+        else if(status == Status.Trained) return "Trained";
+        else return "Tested";
+    }
     public Results getResults() {
         return results;
     }

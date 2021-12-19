@@ -8,15 +8,17 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * Passive object representing information on a conference.
  * Add fields and methods to this class as you see fit (including public methods and constructors).
  */
-public class ConfrenceInformation {
+public class ConferenceInformation {
 
     private String name;
     private int date;
+    private ConcurrentLinkedQueue<String> names;
     ConferenceService service;
 
-    public ConfrenceInformation(String name, int date) {
+    public ConferenceInformation(String name, int date) {
         this.name = name;
         this.date = date;
+        this.names = new ConcurrentLinkedQueue<>();
     }
 
     public String getName() {
@@ -30,6 +32,9 @@ public class ConfrenceInformation {
         this.service = conferenceService;
     }
     public  ConcurrentLinkedQueue<String> getNames(){
-        return this.service.getNames();
+        return this.names;
+    }
+    public void addName(String name){
+        names.add(name);
     }
 }

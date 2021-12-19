@@ -4,6 +4,7 @@ import bgu.spl.mics.Callback;
 import bgu.spl.mics.Event;
 import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.TerminateBroadcast;
 import bgu.spl.mics.application.messages.TestModelEvent;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.messages.TrainModelEvent;
@@ -31,6 +32,7 @@ public class GPUService extends MicroService {
     private Callback<TrainModelEvent> handleTrainModel;
     private Callback<TestModelEvent> handleTestModel ;
     private Callback<TickBroadcast> handleTick;
+    private Callback<TerminateBroadcast> handleTerminate;
     private LinkedBlockingDeque <Event> studentEvents;
     private Event currentEvent;
     public GPUService(String name, GPU gpu) {
@@ -45,12 +47,18 @@ public class GPUService extends MicroService {
             studentEvents.addFirst(testModelEvent);
         };
         handleTick = gpu.getTickHandle();
+        handleTerminate = (t)->{
+            gpu.getCluster().removeGPU(gpu);
+            gpu.getCluster().terminate();
+            terminate();
+        };
     }
     @Override
     protected void initialize() {
         subscribeEvent(TrainModelEvent.class,handleTrainModel);
         subscribeEvent(TestModelEvent.class,handleTestModel);
         subscribeBroadcast(TickBroadcast.class,handleTick);
+        subscribeBroadcast(TerminateBroadcast.class,handleTerminate);
     }
     public Event getTaskFromQueue(){
         try {
@@ -71,5 +79,6 @@ public class GPUService extends MicroService {
     public boolean hasTaskInQueue(){
         return !studentEvents.isEmpty();
     }
+
 
 }

@@ -4,8 +4,9 @@ import bgu.spl.mics.Callback;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.PublishConferenceBroadcast;
 import bgu.spl.mics.application.messages.PublishResultsEvent;
+import bgu.spl.mics.application.messages.TerminateBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
-import bgu.spl.mics.application.objects.ConfrenceInformation;
+import bgu.spl.mics.application.objects.ConferenceInformation;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -19,32 +20,29 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class ConferenceService extends MicroService {
-    ConcurrentLinkedQueue<String> names ;
-    ConfrenceInformation confrenceInformation;
+    ConferenceInformation conferenceInformation;
     Callback<TickBroadcast> tickBroadcastCallback;
     Callback<PublishResultsEvent> publishResultsEventCallback;
 
-    public ConferenceService(ConfrenceInformation confrenceInformation) {
-        super(confrenceInformation.getName());
-        this.confrenceInformation = confrenceInformation;
-        this.confrenceInformation.setConferenceService(this);
-        this.names = new ConcurrentLinkedQueue();
+    public ConferenceService(ConferenceInformation conferenceInformation) {
+        super(conferenceInformation.getName());
+        this.conferenceInformation = conferenceInformation;
+        this.conferenceInformation.setConferenceService(this);
         publishResultsEventCallback =(PublishResultsEvent event)->{
-            names.add(event.getModelName());
+            this.conferenceInformation.addName(event.getModelName());
         };
         tickBroadcastCallback = (TickBroadcast tickBroadcast)->{
-            if(tickBroadcast.getTime()>=this.confrenceInformation.getDate())
-                sendBroadcast(new PublishConferenceBroadcast(names));
+            if(tickBroadcast.getTime()>=this.conferenceInformation.getDate())
+                sendBroadcast(new PublishConferenceBroadcast(this.conferenceInformation.getNames()));
         };
     }
     @Override
     protected void initialize() {
         subscribeEvent(PublishResultsEvent.class,publishResultsEventCallback);
         subscribeBroadcast(TickBroadcast.class,tickBroadcastCallback);
+        subscribeBroadcast(TerminateBroadcast.class,(t)->{
+            terminate();
+        });
 
-    }
-
-    public ConcurrentLinkedQueue<String> getNames() {
-        return names;
     }
 }

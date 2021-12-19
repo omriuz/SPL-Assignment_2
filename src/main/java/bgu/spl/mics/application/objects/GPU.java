@@ -6,6 +6,7 @@ import bgu.spl.mics.application.messages.TestModelEvent;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.messages.TrainModelEvent;
 import bgu.spl.mics.application.services.GPUService;
+import bgu.spl.mics.application.CRMSRunner;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Random;
@@ -35,6 +36,7 @@ public class GPU {
     private BlockingQueue<DataBatch> processedData;
     private DataBatch curr;
     private GPUService service;
+    private int count;
     /**
      * constructor of GPU
      * @param type is the type of the GPU.
@@ -49,6 +51,7 @@ public class GPU {
         else if (this.type == Type.RTX3090) {memoryLimit = 32;speed=1;}
         else {memoryLimit = 8 ; speed=4;}
         processedData = new LinkedBlockingQueue<>(memoryLimit);
+        count = 0;
     }
 
     private Type stringToType(String sType){
@@ -92,6 +95,7 @@ public class GPU {
      * @post: isProcessedDataEmpty() && numberOfBatchesTrained = @pre numberOfBatchesTrained+ @pre this.processedData.size()
      */
     public void trainModel(){
+        count++;
         if(tickCounter == 0) {
             if (!isProcessedDataEmpty()) {
                 try {
@@ -155,7 +159,6 @@ public class GPU {
 
     }
     public void receiveTickBroadcast(TickBroadcast tickBroadcast){
-//        System.out.println("recevied tickBroadcast");
         if(status == Status.AVAILABLE){
             Event e = null;
             if(service.hasTaskInQueue()) {
@@ -190,5 +193,9 @@ public class GPU {
     }
     public void setService(GPUService service){
         this.service = service;
+    }
+
+    public int getCount() {
+        return count;
     }
 }

@@ -64,10 +64,13 @@ public class StudentService extends MicroService {
                 }
             }
         });
-
+        subscribeBroadcast(TerminateBroadcast.class,(t)->{
+            terminate();
+        });
         subscribeBroadcast(TickBroadcast.class, t->{
             //TODO: maybe to add unsubscribe to ticks if finished
-            if(student.isFinished()){System.out.println(student.getName() + " has finished");}
+            if(student.isFinished()) {//todo:}
+            }
             else if(currentModel.getStatus() == Model.Status.PreTrained){
                 System.out.println("sent " + currentModel.getName() + " for training");
                 sendTrain();
@@ -86,6 +89,7 @@ public class StudentService extends MicroService {
                     sendTrain();
                 }
             }
+
         });
     }
 

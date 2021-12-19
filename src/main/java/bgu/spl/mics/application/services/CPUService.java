@@ -1,6 +1,7 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.TerminateBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.objects.CPU;
 
@@ -24,8 +25,11 @@ public class CPUService extends MicroService {
     }
 
     protected void subscribe(){
+        subscribeBroadcast(TerminateBroadcast.class,(t)->{
+            terminate();
+        });
         subscribeBroadcast(TickBroadcast.class, t->{
-            if(cpu.isdataBatchEmpty()){
+            if(cpu.isDataBatchEmpty()){
                 cpu.getCluster().sendDataBatchToCPU(cpu);
             }
             cpu.process();

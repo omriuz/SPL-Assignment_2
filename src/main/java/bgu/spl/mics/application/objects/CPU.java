@@ -18,13 +18,16 @@ public class CPU {
     private final Cluster cluster;
     private int processTickCounter;
     private int ticksToProcess;
-//    private CPUService CPUService;
+    private int count;
+    private int amount;
 
     public CPU (int cores_num){
         this.cores=cores_num;
         this.dataBatch = null;
         this.cluster = Cluster.getInstance();
         this.processTickCounter = 0;
+        this.count = 0;
+        this.amount = 0;
     }
     public Cluster getCluster() {
         return cluster;
@@ -32,7 +35,7 @@ public class CPU {
     public int getCores() {
         return cores;
     }
-    public boolean isdataBatchEmpty(){
+    public boolean isDataBatchEmpty(){
         return dataBatch == null;
     }
 
@@ -66,8 +69,10 @@ public class CPU {
     }
 
     public void process(){
+        count++;
         processTickCounter++;
         if(finishProcess()){
+            amount++;
             cluster.addProcessedData(dataBatch);
             dataBatch = null;
             processTickCounter = 0;
@@ -80,8 +85,11 @@ public class CPU {
      */
     public Collection<DataBatch> returnProcessedData(){throw new NotImplementedException();}
 
+    public int getCount() {
+        return count;
+    }
 
-
-
-
+    public int getAmount() {
+        return amount;
+    }
 }

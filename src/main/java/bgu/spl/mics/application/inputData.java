@@ -1,7 +1,7 @@
 package bgu.spl.mics.application;
 
 import bgu.spl.mics.application.objects.CPU;
-import bgu.spl.mics.application.objects.ConfrenceInformation;
+import bgu.spl.mics.application.objects.ConferenceInformation;
 import bgu.spl.mics.application.objects.GPU;
 import bgu.spl.mics.application.objects.Student;
 
@@ -9,11 +9,11 @@ public class inputData{
     private Student[] Students;
     private GPU[] GPUS;
     private CPU[] CPUS;
-    private ConfrenceInformation[] Conferences;
+    private ConferenceInformation[] Conferences;
     private int TickTime;
     private int Duration;
 
-    public inputData(Student[] Students, GPU[] GPUS, CPU[] CPUS, ConfrenceInformation[] Conference, int TickTime, int Duration){
+    public inputData(Student[] Students, GPU[] GPUS, CPU[] CPUS, ConferenceInformation[] Conference, int TickTime, int Duration){
         this.Students = Students;
         this.GPUS = GPUS;
         this.CPUS = CPUS;
@@ -36,7 +36,7 @@ public class inputData{
         return CPUS;
     }
 
-    public ConfrenceInformation[] getConfrences(){return Conferences;}
+    public ConferenceInformation[] getConfrences(){return Conferences;}
 
 
 }
