@@ -147,7 +147,7 @@ public class GPU {
      * @param
      */
     public void receiveTestModel(TestModelEvent testModelEvent){
-        System.out.println("Received test model - ");
+        System.out.println("Received test model - "+ testModelEvent.getModel().getName());
         Student.Degree degree = testModelEvent.getModel().getStudent().getDegStatus();
         Random rand = new Random();
         double num = rand.nextDouble();

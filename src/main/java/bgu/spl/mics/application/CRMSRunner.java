@@ -95,7 +95,7 @@ public class CRMSRunner {
             HashSet <Model> published = student.getPublishedModels();
             for( Model m : student.getTrainedModels()){
                 studentDescription.append(m.getName()).append(", of Type ").append(m.getData().getTypeName()).append(", of Size ").append(m.getData().getSize());
-                studentDescription.append("\nthe status is: ").append(m.getStatusString());
+                studentDescription.append("\nthe status is ").append(m.getStatusString());
                 studentDescription.append(" and it has ").append(published.contains(m) ? "been Published\n" : "Not been published\n");
             }
             studentDescription.append("Number of papers ").append(student.getName()).append(" ").append("read: ").append(student.getPapersRead()).append("\n\n");
@@ -169,7 +169,7 @@ public class CRMSRunner {
         List<GPU> GPUs = new LinkedList<>();
         int arrySize = jsonArrayOfGPUs.size();
         for (int i=0; i<arrySize; i++){
-            String type = jsonArrayOfGPUs.get(0).getAsString();
+            String type = jsonArrayOfGPUs.get(i).getAsString();
             GPUs.add(new GPU(type));
         }
         return GPUs;
