@@ -32,8 +32,11 @@ public class ConferenceService extends MicroService {
             this.conferenceInformation.addName(event.getModelName());
         };
         tickBroadcastCallback = (TickBroadcast tickBroadcast)->{
-            if(tickBroadcast.getTime()>=this.conferenceInformation.getDate())
+            if(tickBroadcast.getTime()>=this.conferenceInformation.getDate()) {
+                System.out.println(getName() +" has published results");
                 sendBroadcast(new PublishConferenceBroadcast(this.conferenceInformation.getNames()));
+                terminate();
+            }
         };
     }
     @Override

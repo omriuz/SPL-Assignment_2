@@ -1,6 +1,7 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.Event;
+import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.objects.Model;
@@ -21,10 +22,12 @@ import java.util.concurrent.TimeUnit;
 public class StudentService extends MicroService {
     Student student;
     Model currentModel;
+    boolean noMoreTicks;
     public StudentService(String name, Student student) {
         super(name);
         this.student = student;
         this.currentModel = student.getNextModel();
+        this.noMoreTicks = false;
     }
 
     private Event<Boolean> buildTrain(){
@@ -68,20 +71,27 @@ public class StudentService extends MicroService {
             terminate();
         });
         subscribeBroadcast(TickBroadcast.class, t->{
+            if(noMoreTicks);
             //TODO: maybe to add unsubscribe to ticks if finished
             if(student.isFinished()) {//todo:}
             }
             else if(currentModel.getStatus() == Model.Status.PreTrained){
-//                System.out.println("sent " + currentModel.getName() + " for training");
+                System.out.println(student.getName()+" sent " + currentModel.getName() + " for training");
                 sendTrain();
+                currentModel.setStatus(Model.Status.Training);
             }
             else if(currentModel.getStatus() == Model.Status.Training){
                 Boolean trainResult = (Boolean)student.getFuture().get(1, TimeUnit.MILLISECONDS); // need to be timed get()
                 if(trainResult!=null){
+                    currentModel.setStatus(Model.Status.Trained);
+                    student.addTrainedModel(currentModel);
                     sendTest();
                 }
             }else if(currentModel.getStatus() == Model.Status.Trained){
+                System.out.println(student.getName()+" sent " + currentModel.getName() + " for testing");
                 Model.Results testResult = (Boolean)student.getFuture().get() ? Model.Results.Good : Model.Results.Bad;
+                currentModel.setStatus(Model.Status.Tested);
+                currentModel.setResults(testResult);
                 if(testResult == Model.Results.Good){
                     currentModel = student.getNextModel();
                     sendResult();
@@ -89,7 +99,6 @@ public class StudentService extends MicroService {
                     sendTrain();
                 }
             }
-
         });
     }
 

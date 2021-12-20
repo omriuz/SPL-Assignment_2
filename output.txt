@@ -1,28 +1,104 @@
 Students:
-For Student Simba, from department Computer Science, of Degree status MSc the trained models are:
-YOLO10, of Type Images, of Size 200000
-the status is Trained and it has Not been published
-Number of papers Simba read: 0
 
-For Student Zazu, from department EE, of Degree status PhD the trained models are:
-Number of papers Zazu read: 35001
+	Student name: Simba
+	Department: Computer Science
+	Degree status: MSc
+	Papers read: 1
+	Publications: 0
+	the trained models are:
 
-For Student Pumba, from department Computer Science, of Degree status PhD the trained models are:
-Bert, of Type Text, of Size 1000000
-the status is Tested and it has been Published
-Number of papers Pumba read: 0
+		Model name: LessEfficientNet
+		Type: Images
+		Size: 20000
+		Status: Tested
+		Result: Bad
+		Published: NOT
 
-For Student Timon, from department SE, of Degree status MSc the trained models are:
-Percepetron, of Type Tabular, of Size 1000000
-the status is Training and it has Not been published
-Number of papers Timon read: 35001
+	Student name: Zazu
+	Department: EE
+	Degree status: PhD
+	Papers read: 1
+	Publications: 0
+	the trained models are:
 
-For Student Nala, from department Computer Science, of Degree status PhD the trained models are:
-Number of papers Nala read: 35001
+	Student name: Pumba
+	Department: Computer Science
+	Degree status: PhD
+	Papers read: 0
+	Publications: 0
+	the trained models are:
+
+		Model name: GPT10
+		Type: Text
+		Size: 50000
+		Status: Tested
+		Result: Bad
+		Published: NOT
+
+		Model name: GPT5
+		Type: Text
+		Size: 200000
+		Status: Tested
+		Result: Bad
+		Published: NOT
+
+		Model name: Bert
+		Type: Text
+		Size: 1000000
+		Status: Trained
+		Published: NOT
+
+	Student name: Timon
+	Department: SE
+	Degree status: MSc
+	Papers read: 0
+	Publications: 0
+	the trained models are:
+
+		Model name: MoreStyleGAN
+		Type: Images
+		Size: 100000
+		Status: Trained
+		Published: NOT
+
+	Student name: Nala
+	Department: Computer Science
+	Degree status: PhD
+	Papers read: 0
+	Publications: 1
+	the trained models are:
+
+		Model name: VIT2
+		Type: Images
+		Size: 1000000
+		Status: Tested
+		Result: Bad
+		Published: NOT
+
+		Model name: DenserNet
+		Type: Images
+		Size: 100000
+		Status: Tested
+		Result: Good
+		Published: YES
+
+		Model name: MuchMoreEfficientNet
+		Type: Images
+		Size: 20000
+		Status: Tested
+		Result: Bad
+		Published: NOT
+
+		Model name: YOLO9000
+		Type: Images
+		Size: 100000
+		Status: Tested
+		Result: Bad
+		Published: NOT
 
 Conferences:
 For Conference ICML the publications are:
-GPT4 
+DenserNet 
 For Conference NeurIPS the publications are:
 
 For Conference CVPR the publications are:
@@ -33,6 +109,6 @@ For Conference AISTATS the publications are:
 
 In total:
 
-CPU Time: 385007
-GPU Time: 167007
-Amount of batches: 69998
+CPU Time: 324335
+GPU Time: 24681
+Amount of batches: 57574

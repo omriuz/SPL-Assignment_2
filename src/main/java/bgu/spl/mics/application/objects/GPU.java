@@ -6,9 +6,6 @@ import bgu.spl.mics.application.messages.TestModelEvent;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.messages.TrainModelEvent;
 import bgu.spl.mics.application.services.GPUService;
-import bgu.spl.mics.application.CRMSRunner;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -33,6 +30,7 @@ public class GPU {
     private final int memoryLimit;
     private final int speed;
     private int numberOfBatchesSent;
+    private int numberOfBatchesRecived;
     private BlockingQueue<DataBatch> processedData;
     private DataBatch curr;
     private GPUService service;
@@ -53,6 +51,7 @@ public class GPU {
         this.processedData = new LinkedBlockingQueue<>(memoryLimit);
         this.count = 0;
         this.numberOfBatchesSent = 0;
+        this.numberOfBatchesRecived = 0;
     }
 
     private Type stringToType(String sType){
@@ -88,10 +87,12 @@ public class GPU {
      */
     public void receiveDataBatch(){
         DataBatch dataBatch = null;
-        if(cluster.isThereDataBatch(this) && processedData.size()<memoryLimit)
+        if(cluster.isThereDataBatch(this) && processedData.size()<memoryLimit) {
             dataBatch = cluster.sendDataBatchToGPU(this);
-            if(dataBatch != null)
+            numberOfBatchesRecived++;
+            if (dataBatch != null)
                 processedData.add(dataBatch);
+        }
     }
     /**
      * this function used the processed data it contains to train the model.
@@ -99,21 +100,20 @@ public class GPU {
      * @post: isProcessedDataEmpty() && numberOfBatchesTrained = @pre numberOfBatchesTrained+ @pre this.processedData.size()
      */
     public void trainModel(){
-        count++;
-        if(tickCounter == 0) {
+        if(curr == null){
             if (!isProcessedDataEmpty()) {
                 try {
                     curr = processedData.take();
-                    tickCounter++;
                 } catch (InterruptedException e) {
                 }
             }
-        }
-        else tickCounter++;
-        if(tickCounter == speed){
+        }else if(tickCounter == speed){
             data.increaseProcessed();
             curr = null;
             tickCounter = 0;
+        }else{
+            tickCounter++;
+            count++;
         }
     }
     /**
@@ -122,13 +122,13 @@ public class GPU {
      * @post the GPUService is informed that the training is finished
      */
     public void completeTraining(){
-//        System.out.println("completed training - " +  model.getName());
+        System.out.println(service.getName()+" finished training " + model.getName());
         status = Status.AVAILABLE;
         tickCounter = 0;
-        model.setStatus(Model.Status.Trained);
-        model.getStudent().addTrainedModel(model);
         model = null;
         data = null;
+        this.numberOfBatchesSent = 0;
+        this.numberOfBatchesRecived = 0;
         service.completeTrain();
     }
     /**
@@ -139,26 +139,22 @@ public class GPU {
      */
     public void receiveTrainModel(TrainModelEvent trainModelEvent){
         this.model = trainModelEvent.getModel();
-//        System.out.println("Received train model: " +  model.getName());
+        System.out.println(service.getName()+" Received train model: " +  model.getName());
         this.data = model.getData();
         numberOfBatchesSent = 0;
         tickCounter = 0;
         status = Status.TRAINING;
-        model.setStatus(Model.Status.Training);
     }
     /**
      * @post:   model.getStatus()=="Tested" && (model.getResults()=="good" || model.getResults()=="bad")
      * @param
      */
     public void receiveTestModel(TestModelEvent testModelEvent){
-//        System.out.println("Received test model - "+ testModelEvent.getModel().getName());
+        System.out.println(service.getName()+" Received test model - "+ testModelEvent.getModel().getName());
         Student.Degree degree = testModelEvent.getModel().getStudent().getDegStatus();
         Random rand = new Random();
         double num = rand.nextDouble();
         boolean success = degree == Student.Degree.MSc ? num>=0.6 : num>=0.8;
-        testModelEvent.getModel().setStatus(Model.Status.Tested);
-        if(success)
-            testModelEvent.getModel().getStudent().addPublishedModel(testModelEvent.getModel());
         service.completeTest(success);
 
     }
@@ -173,17 +169,17 @@ public class GPU {
                     receiveTestModel((TestModelEvent) e);
                 }
             }
+//            else if(tickBroadcast.getTime()>20000)
+//                System.out.println("basa for " + service.getName());
         }
         else if(status==Status.TRAINING){
-            if(numberOfBatchesSent == 0){
-                for(int i =0; i < data.getSize()/1000; i++)
-                    sendDataBatch(); // made the GPU to wait and it's not training
+            if(numberOfBatchesSent *1000 < data.getSize()) {
+                sendDataBatch(); // made the GPU to wait and it's not training
             }
-            if((data.getProcessed()<data.getSize())) {
+            if(numberOfBatchesRecived < numberOfBatchesSent)
                 receiveDataBatch();
-                trainModel();
-            }
-            else
+            trainModel();
+            if(data.getProcessed() >= data.getSize())
                 completeTraining();
         }
 

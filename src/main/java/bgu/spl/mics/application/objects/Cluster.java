@@ -28,7 +28,7 @@ public class Cluster {
 	}
 
 	private Cluster(){
-		unprocessed = new LinkedBlockingQueue<>();
+		this.unprocessed = new LinkedBlockingQueue<>();
 		this.GPUsDataQueues = new ConcurrentHashMap<>();
 		this.terminated = false;
 
@@ -47,18 +47,18 @@ public class Cluster {
 	}
 	public DataBatch sendDataBatchToGPU(GPU gpu){
 		DataBatch d = null;
-		try{
-			if(!GPUsDataQueues.isEmpty())
-				d = GPUsDataQueues.get(gpu).take();
+		try {
+			d = GPUsDataQueues.get(gpu).take();
 		}
 		catch (InterruptedException e) {}
 		return d;
 	}
 
-	public void sendDataBatchToCPU(CPU cpu){
-		try {
-			cpu.addDataBatch(unprocessed.take());
-		}catch (InterruptedException I){};
+	public synchronized void sendDataBatchToCPU(CPU cpu){
+//		try {
+			if(!unprocessed.isEmpty())
+				cpu.addDataBatch(unprocessed.poll());
+//		}catch (InterruptedException I){};
 	}
 
 	public void addProcessedData(DataBatch dataBatch){

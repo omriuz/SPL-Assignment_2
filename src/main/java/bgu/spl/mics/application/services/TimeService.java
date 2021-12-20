@@ -24,6 +24,8 @@ public class TimeService extends MicroService{
 	private long speed;
 	private long duration;
 	private int currentTime;
+	private int percent;
+	private boolean printed;
 
 	public TimeService() {
 		super("TimeService");
@@ -34,6 +36,8 @@ public class TimeService extends MicroService{
 		this.duration = duration;
 		this.speed = speed;
 		this.currentTime = 0;
+		this.percent = 0;
+		this.printed = false;
 	}
 
 	@Override
@@ -43,17 +47,24 @@ public class TimeService extends MicroService{
 				if(currentTime<=duration) {
 					sendBroadcast(new TickBroadcast(currentTime));
 					currentTime += speed;
+					percent = (currentTime* 100/duration);
+//					System.out.println(percent + " ____________ " + currentTime);
+					if(percent % 10 == 0){
+						if (!printed) {
+							printed = true;
+							System.out.println(percent + "%");
+						}
+					}else printed = false;
 				}
 				else{
-					System.out.println("terminated");
 					sendBroadcast(new TerminateBroadcast());
 					timer.purge();
 					timer.cancel();
-					terminate();
 				}
 			}
 		};
-		timer.schedule(tickTask,1000,speed);
+//		timer.schedule(tickTask,1000,speed);
+		timer.scheduleAtFixedRate(tickTask,1000,speed);
 		subscribeBroadcast(TerminateBroadcast.class,(t)->{
 			terminate();
 		});

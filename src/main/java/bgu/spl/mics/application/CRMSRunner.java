@@ -5,9 +5,7 @@ import bgu.spl.mics.application.services.*;
 import com.google.gson.*;
 
 import java.io.*;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -31,7 +29,7 @@ public class CRMSRunner {
 
 //        createOutputFile(getOutputString(students,confrences,gpuTime.get(),cpuTime.get(),amountOfBatches.get()));
         //TODO: check path before submission
-        JsonObject input = buildJSONObject("C:\\לימודים\\SPL\\עבודה 2\\assignment2 2\\example_input.json");
+        JsonObject input = buildJSONObject("C:\\Users\\omri9\\Documents\\GitHub\\Assignment_2\\example_input.json");
         List<Student> students = BuildStudents(input);
         List<ConferenceInformation> conferences = BuildConferences(input);
         List<GPU> gpus = BuildGPUs(input);
@@ -53,6 +51,7 @@ public class CRMSRunner {
         Thread timing = new Thread(timer,"timing");
         for(Thread thread : threads)
             thread.start();
+        Thread.sleep(1000);
         timing.start();
         timing.join();
         for(Thread thread : threads)
@@ -68,15 +67,19 @@ public class CRMSRunner {
 
     private static int sumAmount(List<CPU> cpus) {
         int sum = 0;
-        for(CPU cpu : cpus)
+        for(CPU cpu : cpus) {
             sum += cpu.getAmount();
+            System.out.println(cpu.getCount());
+        }
         return sum;
     }
 
     private static int sumGpuTime(List<GPU> gpus) {
         int sum = 0;
-        for(GPU gpu : gpus)
+        for(GPU gpu : gpus) {
             sum += gpu.getCount();
+            System.out.println(gpu.getCount());
+        }
         return sum;
     }
 
@@ -89,17 +92,20 @@ public class CRMSRunner {
 
     public static String getOutputString(List<Student> students, List<ConferenceInformation> confs, int gpuTime, int cpuTime, int amountOfBatches){
         StringBuilder ans = new StringBuilder();
-        ans.append("Students:\n");
+        ans.append("Students:\n\n");
         for(Student student : students){
-            StringBuilder studentDescription = new StringBuilder("For Student " + student.getName() +", from department " + student.getDepartment()+", of Degree status ");
-            studentDescription.append(student.getDegStatus()).append(" the trained models are:\n");
+            StringBuilder studentDescription = new StringBuilder("\tStudent name: " + student.getName() +"\n\tDepartment: " + student.getDepartment()+"\n\tDegree status: ");
+            studentDescription.append(student.getDegStatus());
+            studentDescription.append("\n\tPapers read: ").append(student.getPapersRead());
+            studentDescription.append("\n\tPublications: ").append(student.getPublications());
+            studentDescription.append("\n\tthe trained models are:\n\n");
             HashSet <Model> published = student.getPublishedModels();
             for( Model m : student.getTrainedModels()){
-                studentDescription.append(m.getName()).append(", of Type ").append(m.getData().getTypeName()).append(", of Size ").append(m.getData().getSize());
-                studentDescription.append("\nthe status is ").append(m.getStatusString());
-                studentDescription.append(" and it has ").append(published.contains(m) ? "been Published\n" : "Not been published\n");
+                studentDescription.append("\t\tModel name: ").append(m.getName()).append("\n\t\tType: ").append(m.getData().getTypeName()).append("\n\t\tSize: ").append(m.getData().getSize());
+                studentDescription.append("\n\t\tStatus: ").append(m.getStatusString());
+                if(m.getStatus()== Model.Status.Tested) studentDescription.append("\n\t\tResult: ").append(m.getResults().toString());
+                studentDescription.append("\n\t\tPublished: ").append(published.contains(m) ? "YES\n\n" : "NOT\n\n");
             }
-            studentDescription.append("Number of papers ").append(student.getName()).append(" ").append("read: ").append(student.getPapersRead()).append("\n\n");
             ans.append(studentDescription);
         }
         ans.append("Conferences:\n");
@@ -148,6 +154,7 @@ public class CRMSRunner {
             String department = studentObject.get("department").getAsString();
             String status = studentObject.get("status").getAsString();
             List<Model> models = BuildModels(studentObject);
+            models.sort((x, y) -> Integer.compare( x.getData().getSize(),y.getData().getSize()));
             students.add(new Student(name,department,status,models));
         }
         return students;

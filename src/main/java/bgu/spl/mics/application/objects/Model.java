@@ -17,6 +17,13 @@ public class Model {
     private Status status;
     private Results results;
 
+    public Model(String name, String type, int size) {
+        this.name = name;
+        this.data = new Data(stringToDataType(type), size);
+//      this.student = student;
+        this.status = Status.PreTrained;
+        this.results = Results.None;
+    }
     public Status getStatus() {
         return status;
     }
@@ -30,13 +37,7 @@ public class Model {
         return results;
     }
 
-    public Model(String name, String type, int size) {
-        this.name = name;
-        this.data = new Data(stringToDataType(type), size);
-//      this.student = student;
-        this.status = Status.PreTrained;
-        this.results = Results.None;
-    }
+
     private Data.Type stringToDataType(String type){
         Data.Type dataType = null;
         if(type.equals("Images"))
@@ -62,6 +63,7 @@ public class Model {
     }
 
     public void setStatus(Status status){this.status = status;}
+    public void setResults(Results results){this.results = results;}
     public void setStudent(Student student) {
         this.student = student;
     }

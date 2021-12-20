@@ -17,13 +17,11 @@ public class CPUService extends MicroService {
 
     private CPU cpu;
 
-
     public CPUService(String name, CPU cpu) {
         super(name);
         this.cpu = cpu;
         // TODO Implement this
     }
-
     protected void subscribe(){
         subscribeBroadcast(TerminateBroadcast.class,(t)->{
             terminate();

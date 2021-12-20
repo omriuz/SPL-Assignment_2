@@ -67,8 +67,6 @@ public class CPU {
         return processTickCounter >= ticksToProcess;
     }
 
-
-
     public void process(){
         count++;
         processTickCounter++;
