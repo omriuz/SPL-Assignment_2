@@ -62,6 +62,7 @@ public class CRMSRunner {
         System.out.println(amountOfBatches + "_______________________" + cpuTime);
         createOutputFile(getOutputString(students,conferences,gpuTime,cpuTime,amountOfBatches));
         System.out.println("finished the program");
+        //TODO: make sure that all the threads are cancelled
 
     }
 
