@@ -29,8 +29,12 @@ public class CPUService extends MicroService {
         subscribeBroadcast(TickBroadcast.class, t->{
             if(cpu.isDataBatchEmpty()){
                 cpu.getCluster().sendDataBatchToCPU(cpu);
+            }else if(cpu.finishProcess()){
+                cpu.finish();
+                cpu.getCluster().sendDataBatchToCPU(cpu);
             }
-            cpu.process();
+            if(!cpu.isDataBatchEmpty())
+                cpu.process();
         });
     }
 

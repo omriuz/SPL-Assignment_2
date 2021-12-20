@@ -75,8 +75,10 @@ public class Student {
     public <T> void setFuture(Future<T> future){this.future = future;}
     public List<String> getPublishedModelNames(){return publishedModelNames;}
     public void addPublishedModel(Model model){
-        publishedModels.add(model);
-        publishedModelNames.add(model.getName());
+        if(model != null) {
+            publishedModels.add(model);
+            publishedModelNames.add(model.getName());
+        }
     }
     public void incPublications() {
         this.publications++;

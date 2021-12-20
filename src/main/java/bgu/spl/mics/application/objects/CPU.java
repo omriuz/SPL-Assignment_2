@@ -49,8 +49,8 @@ public class CPU {
     * @post @pre NPDataBatches.size()+ @param data.size()==this.NPDataBatches.size()
     */
     public void addDataBatch(DataBatch dataBatch){
-        this.dataBatch = dataBatch;
-        setTicksToProcess();
+            this.dataBatch = dataBatch;
+            setTicksToProcess();
     }
     /**
      * @pre this.NPDataBatches.size() > 0
@@ -63,20 +63,26 @@ public class CPU {
         else ans = 1;
         return ans;
     }
-    private boolean finishProcess(){
+    public boolean finishProcess(){
         return processTickCounter >= ticksToProcess;
     }
 
     public void process(){
         count++;
         processTickCounter++;
-        if(finishProcess()){
-            amount++;
-            cluster.addProcessedData(dataBatch);
-            dataBatch = null;
-            processTickCounter = 0;
+//        if(finishProcess()){
+//            amount++;
+//            cluster.addProcessedData(dataBatch);
+//            dataBatch = null;
+//            processTickCounter = 0;
 //            System.out.println("amount= " + amount + "______________  count= " + count);
-        }
+//        }
+    }
+    public void finish(){
+        amount++;
+        cluster.addProcessedData(dataBatch);
+        dataBatch = null;
+        processTickCounter = 0;
     }
 
     /**

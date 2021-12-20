@@ -73,7 +73,11 @@ public class StudentService extends MicroService {
         subscribeBroadcast(TickBroadcast.class, t->{
             if(noMoreTicks);
             //TODO: maybe to add unsubscribe to ticks if finished
-            if(student.isFinished()) {//todo:}
+            else if(student.isFinished()) {
+                MessageBusImpl impl = (MessageBusImpl) getBus();
+                impl.unsubscribeBroadcast(TickBroadcast.class, this);
+                noMoreTicks = true;
+                System.out.println(student.getName() + " finished!!!");
             }
             else if(currentModel.getStatus() == Model.Status.PreTrained){
                 System.out.println(student.getName()+" sent " + currentModel.getName() + " for training");
@@ -93,11 +97,14 @@ public class StudentService extends MicroService {
                 currentModel.setStatus(Model.Status.Tested);
                 currentModel.setResults(testResult);
                 if(testResult == Model.Results.Good){
-                    currentModel = student.getNextModel();
+                    currentModel.getStudent().addPublishedModel(currentModel);
                     sendResult();
                 }else if(testResult == Model.Results.Bad){
-                    sendTrain();
+//                    sendTrain();
                 }
+                currentModel = student.getNextModel();
+//                if(currentModel!=null)
+//                    sendTrain();
             }
         });
     }

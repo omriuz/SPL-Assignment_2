@@ -113,31 +113,42 @@ public class MessageBusImpl implements MessageBus {
 	}
 
 	@Override
-	public void register(MicroService m) {
-			microservicesQueues.putIfAbsent(m, new LinkedBlockingDeque<>());
+	public synchronized void register(MicroService m) {
+//		synchronized (lockMicroServices) {
+		microservicesQueues.putIfAbsent(m, new LinkedBlockingDeque<>());
+//		}
 	}
 
 	@Override
 	public synchronized void unregister(MicroService m) {
 		// TODO: need to deal with the references related to this microservice
-			microservicesQueues.remove(m);
-		for(Map.Entry<Class<? extends Event>, BlockingQueue<MicroService>> entry : eventsQueuesOfServices.entrySet()){
-				if(isSubscribeToEvent(m,entry.getKey()))
-					entry.getValue().remove(m);
-		}
-		for(Map.Entry<Class<? extends Broadcast>, Vector<MicroService>> entry : broadcastsListsOfServices.entrySet()){
-			if(isSubscribeToBroadcast(m,entry.getKey()))
+//		synchronized (lockMicroServices) {
+		microservicesQueues.remove(m);
+//		}
+//		synchronized (lockEvent) {
+		for (Map.Entry<Class<? extends Event>, BlockingQueue<MicroService>> entry : eventsQueuesOfServices.entrySet()) {
+			if (isSubscribeToEvent(m, entry.getKey()))
 				entry.getValue().remove(m);
 		}
-
+//		}
+//		synchronized (lockBroadcast) {
+		for (Map.Entry<Class<? extends Broadcast>, BlockingDeque<MicroService>> entry : broadcastsListsOfServices.entrySet()) {
+			if (isSubscribeToBroadcast(m, entry.getKey()))
+				entry.getValue().remove(m);
+		}
+//		}
 	}
 
 	@Override
 	public Message awaitMessage(MicroService m) throws InterruptedException {
+//		synchronized (lockMicroServices) {
 		return microservicesQueues.get(m).take();
+//		}
 
 	}
 
-
+	public void unsubscribeBroadcast(Class<? extends Broadcast> type, MicroService m){
+		broadcastsListsOfServices.get(type).remove(m); // add m to the Queue
+	}
 
 }

@@ -24,7 +24,6 @@ public class Cluster {
 	private boolean terminated;
 	private static class SingeltonHolder{
 		private static Cluster instance = new Cluster();
-
 	}
 
 	private Cluster(){
@@ -42,6 +41,7 @@ public class Cluster {
 	public void removeGPU(GPU gpu){
 		GPUsDataQueues.remove(gpu);
 	}
+
 	public void sendDataBatchToCluster(DataBatch batch){
 			unprocessed.add(batch);
 	}
@@ -70,5 +70,11 @@ public class Cluster {
 	}
 	public void terminate(){
 		terminated = true;
+	}
+	public boolean isUnprocessedEmpty(){
+		return unprocessed.isEmpty();
+	}
+	public int getProcessedSize(GPU gpu){
+		return GPUsDataQueues.get(gpu).size();
 	}
 }

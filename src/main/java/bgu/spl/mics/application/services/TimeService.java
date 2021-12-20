@@ -22,7 +22,7 @@ public class TimeService extends MicroService{
 
 	private Timer timer ;
 	private long speed;
-	private long duration;
+	private int duration;
 	private int currentTime;
 	private int percent;
 	private boolean printed;
