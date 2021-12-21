@@ -1,9 +1,4 @@
 package bgu.spl.mics.application.objects;
-
-import com.sun.org.glassfish.external.statistics.Statistic;
-
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -20,7 +15,6 @@ public class Cluster {
 
 	private BlockingQueue<DataBatch> unprocessed;
 	private ConcurrentMap<GPU,BlockingQueue<DataBatch>> GPUsDataQueues;
-	private Statistic statistic; //TODO crate Statistic callas.
 	private boolean terminated;
 	private static class SingeltonHolder{
 		private static Cluster instance = new Cluster();
@@ -55,10 +49,8 @@ public class Cluster {
 	}
 
 	public synchronized void sendDataBatchToCPU(CPU cpu){
-//		try {
 			if(!unprocessed.isEmpty())
 				cpu.addDataBatch(unprocessed.poll());
-//		}catch (InterruptedException I){};
 	}
 
 	public void addProcessedData(DataBatch dataBatch){
@@ -70,11 +62,5 @@ public class Cluster {
 	}
 	public void terminate(){
 		terminated = true;
-	}
-	public boolean isUnprocessedEmpty(){
-		return unprocessed.isEmpty();
-	}
-	public int getProcessedSize(GPU gpu){
-		return GPUsDataQueues.get(gpu).size();
 	}
 }

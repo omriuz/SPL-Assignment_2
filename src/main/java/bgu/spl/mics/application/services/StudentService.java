@@ -6,7 +6,6 @@ import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.objects.Model;
 import bgu.spl.mics.application.objects.Student;
-
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -67,9 +66,7 @@ public class StudentService extends MicroService {
                 }
             }
         });
-        subscribeBroadcast(TerminateBroadcast.class,(t)->{
-            terminate();
-        });
+        subscribeBroadcast(TerminateBroadcast.class,(t)-> terminate());
         subscribeBroadcast(TickBroadcast.class, t->{
             if(noMoreTicks);
             //TODO: maybe to add unsubscribe to ticks if finished
@@ -77,10 +74,8 @@ public class StudentService extends MicroService {
                 MessageBusImpl impl = (MessageBusImpl) getBus();
                 impl.unsubscribeBroadcast(TickBroadcast.class, this);
                 noMoreTicks = true;
-                System.out.println(student.getName() + " finished!!!");
             }
             else if(currentModel.getStatus() == Model.Status.PreTrained){
-                System.out.println(student.getName()+" sent " + currentModel.getName() + " for training");
                 sendTrain();
                 currentModel.setStatus(Model.Status.Training);
             }
@@ -92,19 +87,24 @@ public class StudentService extends MicroService {
                     sendTest();
                 }
             }else if(currentModel.getStatus() == Model.Status.Trained){
-                System.out.println(student.getName()+" sent " + currentModel.getName() + " for testing");
-                Model.Results testResult = (Boolean)student.getFuture().get() ? Model.Results.Good : Model.Results.Bad;
-                currentModel.setStatus(Model.Status.Tested);
-                currentModel.setResults(testResult);
-                if(testResult == Model.Results.Good){
-                    currentModel.getStudent().addPublishedModel(currentModel);
-                    sendResult();
-                }else if(testResult == Model.Results.Bad){
-//                    sendTrain();
+                Object testResult = student.getFuture().get();
+                if(testResult!=null) {
+                    Model.Results result ;
+                    if((Boolean)testResult)
+                        result = Model.Results.Good;
+                    else
+                        result = Model.Results.Bad;
+                    currentModel.setStatus(Model.Status.Tested);
+                    currentModel.setResults(result);
+                    if (result == Model.Results.Good) {
+                        currentModel.getStudent().addPublishedModel(currentModel);
+                        sendResult();
+                    }
+                    currentModel = student.getNextModel();
                 }
-                currentModel = student.getNextModel();
-//                if(currentModel!=null)
-//                    sendTrain();
+                else {
+                    terminate();
+                }
             }
         });
     }

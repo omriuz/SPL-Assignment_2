@@ -15,12 +15,4 @@ public class TestModelEvent implements Event<Boolean> {
     public Model getModel() {
         return model;
     }
-
-    public Model.Results getResults() {
-        return results;
-    }
-    public void setResults(Model.Results newResult){
-        this.results = newResult;
-    }
-
 }

@@ -20,7 +20,6 @@ public class Model {
     public Model(String name, String type, int size) {
         this.name = name;
         this.data = new Data(stringToDataType(type), size);
-//      this.student = student;
         this.status = Status.PreTrained;
         this.results = Results.None;
     }
@@ -36,7 +35,6 @@ public class Model {
     public Results getResults() {
         return results;
     }
-
 
     private Data.Type stringToDataType(String type){
         Data.Type dataType = null;

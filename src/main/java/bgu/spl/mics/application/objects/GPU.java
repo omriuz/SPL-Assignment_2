@@ -1,5 +1,4 @@
 package bgu.spl.mics.application.objects;
-
 import bgu.spl.mics.Callback;
 import bgu.spl.mics.Event;
 import bgu.spl.mics.application.messages.TestModelEvent;
@@ -30,15 +29,14 @@ public class GPU {
     private final int memoryLimit;
     private final int speed;
     private int numberOfBatchesSent;
-    private int numberOfBatchesRecived;
-    private BlockingQueue<DataBatch> processedData;
+    private int numberOfBatchesReceived;
+    private final BlockingQueue<DataBatch> processedData;
     private DataBatch curr;
     private GPUService service;
     private int count;
     /**
      * constructor of GPU
      * @param type is the type of the GPU.
-     * @param cluster is the cluster of the GPU.
      */
     public GPU(String type){
         this.type = stringToType(type);
@@ -51,7 +49,7 @@ public class GPU {
         this.processedData = new LinkedBlockingQueue<>(memoryLimit);
         this.count = 0;
         this.numberOfBatchesSent = 0;
-        this.numberOfBatchesRecived = 0;
+        this.numberOfBatchesReceived = 0;
     }
 
     private Type stringToType(String sType){
@@ -65,39 +63,31 @@ public class GPU {
         return type;
     }
     /**
-     * this method checks weather the memory limit of the gpu is reached.
-     * @return @boolean true if the limit is reached and @boolean false otherwise.
-     * @pre this.processedData!=null
-     * @post @return == this.memoryLimit == this.processedData.size()
-     */
-    public boolean isFull(){return processedData.size()==memoryLimit;}
-
-    /**
      * sends the dataBatch from the trainModel to the cluster
      * @pre data!=null && cluster!=null
-     * @post unProcessedData.size() = @pre unProcessedData.size() - @return.size()
+     * @post numberOfBatchesSent = @pre numberOfBatchesSent + 1
      */
     public void sendDataBatch(){
         cluster.sendDataBatchToCluster(new DataBatch(this.data,1000*numberOfBatchesSent,this));
         numberOfBatchesSent++;
     }
     /**
-     * @pre isFull()==false
+     * @pre
      * @post: this.processedData.size() <= memoryLimit
      */
     public void receiveDataBatch(){
-        DataBatch dataBatch = null;
+        DataBatch dataBatch;
         if(cluster.isThereDataBatch(this) && processedData.size()<memoryLimit) {
             dataBatch = cluster.sendDataBatchToGPU(this);
-            numberOfBatchesRecived++;
+            numberOfBatchesReceived++;
             if (dataBatch != null)
                 processedData.add(dataBatch);
         }
     }
     /**
      * this function used the processed data it contains to train the model.
-     * @pre this.model!=null && !isProcessedDataEmpty()
-     * @post: isProcessedDataEmpty() && numberOfBatchesTrained = @pre numberOfBatchesTrained+ @pre this.processedData.size()
+     * @pre this.model!=null
+     * @post:
      */
     public void trainModel(){
         if(curr == null){
@@ -118,17 +108,16 @@ public class GPU {
     }
     /**
      * called when the gpu finished training the model
-     * @pre this.numberOfBatchesToProcess == numberOfBatchesProcess
+     * @pre this.data.getProcessed() == this.data.getSize()
      * @post the GPUService is informed that the training is finished
      */
     public void completeTraining(){
-        System.out.println(service.getName()+" finished training " + model.getName());
         status = Status.AVAILABLE;
         tickCounter = 0;
         model = null;
         data = null;
         this.numberOfBatchesSent = 0;
-        this.numberOfBatchesRecived = 0;
+        this.numberOfBatchesReceived = 0;
         service.completeTrain();
     }
     /**
@@ -139,7 +128,6 @@ public class GPU {
      */
     public void receiveTrainModel(TrainModelEvent trainModelEvent){
         this.model = trainModelEvent.getModel();
-        System.out.println(service.getName()+" Received train model: " +  model.getName());
         this.data = model.getData();
         numberOfBatchesSent = 0;
         tickCounter = 0;
@@ -150,38 +138,11 @@ public class GPU {
      * @param
      */
     public void receiveTestModel(TestModelEvent testModelEvent){
-        System.out.println(service.getName()+" Received test model - "+ testModelEvent.getModel().getName());
         Student.Degree degree = testModelEvent.getModel().getStudent().getDegStatus();
         Random rand = new Random();
         double num = rand.nextDouble();
-        boolean success = degree == Student.Degree.MSc ? num>=0.6 : num>=0.8;
+        boolean success = degree == Student.Degree.MSc ? num<=0.6 : num<=0.8;
         service.completeTest(success);
-
-    }
-    public void receiveTickBroadcast(TickBroadcast tickBroadcast){
-        if(status == Status.AVAILABLE){
-            Event e = null;
-            if(service.hasTaskInQueue()) {
-                e = service.getTaskFromQueue();
-                if (e.getClass() == TrainModelEvent.class) {
-                    receiveTrainModel((TrainModelEvent) e);
-                } else if (e.getClass() == TestModelEvent.class) {
-                    receiveTestModel((TestModelEvent) e);
-                }
-            }
-//            else if(tickBroadcast.getTime()>20000)
-//                System.out.println("basa for " + service.getName());
-        }
-        else if(status==Status.TRAINING){
-            if(numberOfBatchesSent *1000 < data.getSize()) {
-                sendDataBatch(); // made the GPU to wait and it's not training
-            }
-            if(numberOfBatchesRecived < numberOfBatchesSent)
-                receiveDataBatch();
-            trainModel();
-            if(data.getProcessed() >= data.getSize())
-                completeTraining();
-        }
 
     }
     public Cluster getCluster(){return this.cluster;}
@@ -191,14 +152,27 @@ public class GPU {
     public Status getStatus() {
         return status;
     }
-    public Callback<TickBroadcast> getTickHandle(){
-        return (TickBroadcast tickBroadcast)->{receiveTickBroadcast(tickBroadcast);};
-    }
     public void setService(GPUService service){
         this.service = service;
     }
 
     public int getCount() {
         return count;
+    }
+
+    public int getNumberOfBatchesSent() {
+        return numberOfBatchesSent;
+    }
+
+    public Model getModel() {
+        return model;
+    }
+
+    public Data getData() {
+        return data;
+    }
+
+    public int getNumberOfBatchesReceived() {
+        return numberOfBatchesReceived;
     }
 }

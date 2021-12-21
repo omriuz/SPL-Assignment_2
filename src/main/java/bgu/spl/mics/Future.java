@@ -1,4 +1,5 @@
 package bgu.spl.mics;
+import java.sql.SQLOutput;
 import java.util.concurrent.TimeUnit;
 
 
@@ -18,6 +19,7 @@ public class Future<T> {
 	 */
 	public Future() {
 		isDone = false;
+		result = null;
 	}
 
 	/**
@@ -35,6 +37,7 @@ public class Future<T> {
 				try {
 					this.wait();
 				} catch (InterruptedException e) {
+					break;
 				}
 			}
 		}
@@ -66,7 +69,6 @@ public class Future<T> {
 	 * This method is non-blocking, it has a limited amount of time determined
 	 * by {@code timeout}
 	 * <p>
-	 * @param timout 	the maximal amount of time units to wait for the result.
 	 * @param unit		the {@link TimeUnit} time units to wait.
 	 * @return return the result of type T if it is available, if not,
 	 * 	       wait for {@code timeout} TimeUnits {@code unit}. If time has

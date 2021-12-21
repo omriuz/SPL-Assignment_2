@@ -77,7 +77,8 @@ public class MessageBusImpl implements MessageBus {
 	@Override
 	public <T> void complete(Event<T> e, T result) {
 //		synchronized (lockEvent) {
-		eventsFutures.get(e).resolve(result);
+		if(eventsFutures.get(e)!=null)
+			eventsFutures.get(e).resolve(result);
 //		}
 	}
 
@@ -85,8 +86,11 @@ public class MessageBusImpl implements MessageBus {
 	public synchronized void sendBroadcast(Broadcast b) {
 //		synchronized (lockMicroServices) {
 		for (MicroService m : broadcastsListsOfServices.get(b.getClass())) { // for each microservice in b type, add b to its queue.
-			if (b.getClass() == TerminateBroadcast.class)
+			if (b.getClass() == TerminateBroadcast.class) {
+				microservicesQueues.get(m).clear();
 				microservicesQueues.get(m).addLast(b);
+				this.notifyAll();
+			}
 			else
 				microservicesQueues.get(m).addLast(b);
 		}
@@ -150,5 +154,4 @@ public class MessageBusImpl implements MessageBus {
 	public void unsubscribeBroadcast(Class<? extends Broadcast> type, MicroService m){
 		broadcastsListsOfServices.get(type).remove(m); // add m to the Queue
 	}
-
 }

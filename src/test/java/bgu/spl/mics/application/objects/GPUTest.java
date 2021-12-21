@@ -1,89 +1,91 @@
-//package bgu.spl.mics.application.objects;
-//
-//import junit.framework.TestCase;
-//
-//import java.util.ArrayList;
-//import java.util.Collection;
-//import java.util.LinkedList;
-//
-//public class GPUTest extends TestCase{
-//    public GPU gpu;
-//    public Cluster cluster;
-//    private Model trainModel;
-//    private Model testModel;
-//
-//    public void setUp() throws Exception {
-//        cluster = new Cluster();
-//        gpu=new GPU(GPU.Type.GTX1080,cluster);
-//        trainModel = new Model();
-//        testModel = new Model();
-//    }
-//
-//    public void testReceiveTrainModel() {
-//        assertTrue(gpu.getModel()==null);
-//        gpu.receiveTrainModel(trainModel);
-//        assertTrue(gpu.getModel()!=null);
-//    }
-//
-//    public void testIsFull() {
-//        gpu.receiveTrainModel(trainModel);
-//        assertTrue(gpu.getModel()!=null&&gpu.getCluster()!=null);
-//        assertTrue(gpu.isFull()==(gpu.getMemoryLimit()==gpu.getSizeOfProcessedData()));
-//    }
-//
-//    public void testSendData() {
-//        gpu.receiveTrainModel(trainModel);
-//        assertTrue(gpu.getModel()!=null && gpu.getCluster()!=null);
-//        int firstSize = gpu.getSizeOfUnProcessedData();
-//        Collection<DataBatch> data = gpu.sendData();
-//        assertTrue(gpu.getSizeOfUnProcessedData()==firstSize-data.size());
-//    }
-//    public void testCanReceiveData() {
-//        assertTrue(gpu.getMemoryLimit()!=0);
-//        assertFalse(gpu.canReceiveData(8));
-//        assertTrue(gpu.canReceiveData(7));
-//    }
-//    public void testReceiveData() {
-//        gpu.receiveTrainModel(trainModel);
-//        Collection<DataBatch> data = new LinkedList<>();
-//        for (int i = 0; i < 7; i++) {
-//            data.add(new DataBatch());
-//        }
-//        assertTrue(gpu.canReceiveData(data.size()));
-//        gpu.receiveData(data);
-//        assertTrue(gpu.getSizeOfProcessedData()<=gpu.getMemoryLimit());
-//    }
-//    public void testTrainModel() {
-//        gpu.receiveTrainModel(trainModel);
-//        assertTrue(gpu.getModel()!=null);
-//        assertFalse(gpu.isProcessedDataEmpty());
-//        Collection<DataBatch> data = new LinkedList<>();
-//        for (int i = 0; i < 7; i++) {
-//            data.add(new DataBatch());
-//        }
-//        gpu.receiveData(data);
-//        int before = gpu.getNumberOfBatchesTrained();
-//        gpu.trainModel();
-//        assertTrue(gpu.isProcessedDataEmpty());
-//        assertTrue(gpu.getNumberOfBatchesTrained() == before + data.size());
-//    }
-//
-//    public void testCompleteTraining() {
-//        gpu.receiveTrainModel(trainModel);
-//        Collection<DataBatch> data = new LinkedList<>();
-//        for (int i = 0; i < 7; i++) {
-//            data.add(new DataBatch());
-//        }
-//        gpu.receiveData(data);
-//        gpu.trainModel();
-//        assertTrue(gpu.getNumberOfBatchesToProcess()==gpu.getNumberOfBatchesTrained());
-//        gpu.completeTraining();
-//
-//    }
-//
-//    public void testReceiveTestModel() {
-//        gpu.receiveTestModel(testModel);
-//        assertTrue(testModel.getStatus()=="Tested");
-//        assertTrue(trainModel.getResults()=="good" || trainModel.getResults()=="bad");
-//    }
-//}
+package bgu.spl.mics.application.objects;
+
+import bgu.spl.mics.application.messages.TestModelEvent;
+import bgu.spl.mics.application.messages.TrainModelEvent;
+import bgu.spl.mics.application.services.GPUService;
+import junit.framework.TestCase;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+
+public class GPUTest extends TestCase{
+    public GPU gpu;
+    public CPU cpu;
+    public Cluster cluster;
+    private TrainModelEvent trainModel;
+    private TestModelEvent testModel;
+    private GPUService service;
+
+    public void setUp() throws Exception {
+        cluster = Cluster.getInstance();
+        gpu=new GPU("RTX3090");
+        service = new GPUService("serve",gpu);
+        cpu = new CPU(32);
+        trainModel = new TrainModelEvent(new Model("omri","Images",1000));
+        testModel = new TestModelEvent(new Model("Yonatan","Images",1000));
+        List<Model> list = new LinkedList<>();
+        list.add(testModel.getModel());
+        Student student = new Student("omri","Compter science","MSc",list);
+
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        service.getBus().unregister(service);
+    }
+
+    public void testSendDataBatch() {
+        gpu.receiveTrainModel(trainModel);
+        assertTrue(gpu.getModel()!=null && gpu.getCluster()!=null);
+        int firstSize = gpu.getNumberOfBatchesSent();
+        gpu.sendDataBatch();
+        assertTrue(gpu.getNumberOfBatchesSent()==firstSize+1);
+    }
+    public void testReceiveDataBatch() {
+        gpu.receiveTrainModel(trainModel);
+        gpu.sendDataBatch();
+        cluster.sendDataBatchToCPU(cpu);
+        cpu.finish();
+        cluster.sendDataBatchToGPU(gpu);
+        gpu.receiveDataBatch();
+        assertTrue(gpu.getSizeOfProcessedData()<=gpu.getMemoryLimit());
+    }
+    public void testTrainModel() {
+        gpu.receiveTrainModel(trainModel);
+        gpu.sendDataBatch();
+        cluster.sendDataBatchToCPU(cpu);
+        cpu.finish();
+        gpu.receiveDataBatch();
+        int size = gpu.getSizeOfProcessedData();
+        gpu.trainModel();
+        assertEquals(size - 1,gpu.getSizeOfProcessedData());
+    }
+    public void testCompleteTraining() {
+        service.setCurrentEvent(trainModel);
+        gpu.receiveTrainModel(trainModel);
+        gpu.sendDataBatch();
+        cluster.sendDataBatchToCPU(cpu);
+        cpu.finish();
+        cluster.sendDataBatchToGPU(gpu);
+        gpu.receiveDataBatch();
+        gpu.trainModel();
+        gpu.completeTraining();
+        assertNull(gpu.getModel());
+        assertNull(gpu.getData());
+        assertSame(gpu.getStatus(), GPU.Status.AVAILABLE);
+
+    }
+    public void testReceiveTrainModel() {
+        assertNull(gpu.getModel());
+        gpu.receiveTrainModel(trainModel);
+        assertNotNull(gpu.getModel());
+    }
+    public void testReceiveTestModel() {
+        assertTrue(testModel.getModel().getResults()== Model.Results.None);
+        service.setCurrentEvent(testModel);
+        gpu.receiveTestModel(testModel);
+    }
+}

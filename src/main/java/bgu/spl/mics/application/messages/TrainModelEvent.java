@@ -14,11 +14,4 @@ public class TrainModelEvent implements Event<Boolean> {
     public Model getModel(){
         return model;
     }
-    public void complete(){
-        trained = true;
-    }
-    public Boolean getTrained(){
-        return trained;
-    }
-
 }

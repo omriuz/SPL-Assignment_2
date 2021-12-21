@@ -7,9 +7,23 @@ Students:
 	Publications: 0
 	the trained models are:
 
+		Model name: ResNet9000
+		Type: Images
+		Size: 200000
+		Status: Tested
+		Result: Good
+		Published: YES
+
 		Model name: LessEfficientNet
 		Type: Images
 		Size: 20000
+		Status: Tested
+		Result: Bad
+		Published: NOT
+
+		Model name: YOLO10
+		Type: Images
+		Size: 200000
 		Status: Tested
 		Result: Bad
 		Published: NOT
@@ -24,29 +38,9 @@ Students:
 	Student name: Pumba
 	Department: Computer Science
 	Degree status: PhD
-	Papers read: 0
+	Papers read: 1
 	Publications: 0
 	the trained models are:
-
-		Model name: GPT10
-		Type: Text
-		Size: 50000
-		Status: Tested
-		Result: Bad
-		Published: NOT
-
-		Model name: GPT5
-		Type: Text
-		Size: 200000
-		Status: Tested
-		Result: Bad
-		Published: NOT
-
-		Model name: Bert
-		Type: Text
-		Size: 1000000
-		Status: Trained
-		Published: NOT
 
 	Student name: Timon
 	Department: SE
@@ -58,6 +52,13 @@ Students:
 		Model name: MoreStyleGAN
 		Type: Images
 		Size: 100000
+		Status: Tested
+		Result: Good
+		Published: YES
+
+		Model name: ConditionalGAN
+		Type: Images
+		Size: 500000
 		Status: Trained
 		Published: NOT
 
@@ -65,50 +66,28 @@ Students:
 	Department: Computer Science
 	Degree status: PhD
 	Papers read: 0
-	Publications: 1
+	Publications: 0
 	the trained models are:
-
-		Model name: VIT2
-		Type: Images
-		Size: 1000000
-		Status: Tested
-		Result: Bad
-		Published: NOT
-
-		Model name: DenserNet
-		Type: Images
-		Size: 100000
-		Status: Tested
-		Result: Good
-		Published: YES
 
 		Model name: MuchMoreEfficientNet
 		Type: Images
 		Size: 20000
-		Status: Tested
-		Result: Bad
-		Published: NOT
-
-		Model name: YOLO9000
-		Type: Images
-		Size: 100000
-		Status: Tested
-		Result: Bad
+		Status: Trained
 		Published: NOT
 
 Conferences:
 For Conference ICML the publications are:
-DenserNet 
+
 For Conference NeurIPS the publications are:
 
 For Conference CVPR the publications are:
-
+MoreStyleGAN 
 For Conference ECCV the publications are:
-
+ResNet9000 
 For Conference AISTATS the publications are:
 
 In total:
 
-CPU Time: 324335
-GPU Time: 24681
-Amount of batches: 57574
+CPU Time: 323062
+GPU Time: 37918
+Amount of batches: 56026

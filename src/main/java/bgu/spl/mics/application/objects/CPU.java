@@ -1,11 +1,5 @@
 package bgu.spl.mics.application.objects;
-
-import bgu.spl.mics.application.services.CPUService;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
-import java.awt.*;
 import java.util.Collection;
-import java.util.Queue;
 
 /**
  * Passive object representing a single CPU.
@@ -13,7 +7,7 @@ import java.util.Queue;
  * Add fields and methods to this class as you see fit (including public methods and constructors).
  */
 public class CPU {
-    private int cores;
+    private final int cores;
     private DataBatch dataBatch;
     private final Cluster cluster;
     private int processTickCounter;
@@ -31,9 +25,6 @@ public class CPU {
     }
     public Cluster getCluster() {
         return cluster;
-    }
-    public int getCores() {
-        return cores;
     }
     public boolean isDataBatchEmpty(){
         return dataBatch == null;
@@ -89,7 +80,6 @@ public class CPU {
      * @pre !PDataBatches.isEmpty()
      * @post this.PDataBatches.size() = @pre PDataBatches.size()- @return.size()
      */
-    public Collection<DataBatch> returnProcessedData(){throw new NotImplementedException();}
 
     public int getCount() {
         return count;

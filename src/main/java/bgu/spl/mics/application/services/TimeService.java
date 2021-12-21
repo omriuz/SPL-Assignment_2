@@ -1,11 +1,9 @@
 package bgu.spl.mics.application.services;
 
-import bgu.spl.mics.Callback;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.TerminateBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
 
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -20,16 +18,13 @@ import java.util.TimerTask;
  */
 public class TimeService extends MicroService{
 
-	private Timer timer ;
-	private long speed;
-	private int duration;
+	private final Timer timer ;
+	private final long speed;
+	private final int duration;
 	private int currentTime;
 	private int percent;
 	private boolean printed;
 
-	public TimeService() {
-		super("TimeService");
-	}
 	public TimeService(int duration, int speed){
 		super("TimeService");
 		timer = new Timer();
@@ -48,7 +43,6 @@ public class TimeService extends MicroService{
 					sendBroadcast(new TickBroadcast(currentTime));
 					currentTime += speed;
 					percent = (currentTime* 100/duration);
-//					System.out.println(percent + " ____________ " + currentTime);
 					if(percent % 10 == 0){
 						if (!printed) {
 							printed = true;
@@ -63,11 +57,8 @@ public class TimeService extends MicroService{
 				}
 			}
 		};
-//		timer.schedule(tickTask,1000,speed);
 		timer.scheduleAtFixedRate(tickTask,1000,speed);
-		subscribeBroadcast(TerminateBroadcast.class,(t)->{
-			terminate();
-		});
+		subscribeBroadcast(TerminateBroadcast.class,(t)-> terminate());
 
 		
 	}

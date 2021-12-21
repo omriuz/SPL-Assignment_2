@@ -17,18 +17,18 @@ public class Student {
     public enum Degree {
         MSc, PhD
     }
-    private String name;
-    private String department;
-    private Degree degStatus;
+    private final String name;
+    private final String department;
+    private final Degree degStatus;
     private int publications;
     private int papersRead;
-    private List<Model> models;
+    private final List<Model> models;
     private Future future;
     private int currentModel;
     private Boolean finished;
-    private List<String> publishedModelNames;
-    private HashSet<Model> trainedModels;
-    private HashSet<Model> publishedModels;
+    private final List<String> publishedModelNames;
+    private final HashSet<Model> trainedModels;
+    private final HashSet<Model> publishedModels;
     public Student(String name, String department, String status, List<Model> models) {
         this.name = name;
         this.department = department;
@@ -68,9 +68,6 @@ public class Student {
     public int getPapersRead() {
         return papersRead;
     }
-    public List<Model> getModels(){
-        return models;
-    }
     public <T> Future<T> getFuture(){ return future;}
     public <T> void setFuture(Future<T> future){this.future = future;}
     public List<String> getPublishedModelNames(){return publishedModelNames;}
@@ -88,8 +85,8 @@ public class Student {
     }
     public Model getNextModel(){
         Model returnModel=null;
-        if(finished)
-            returnModel = null;
+        if(finished) {
+        }
         else {
             if (currentModel == models.size()) {
                 finished = true;
@@ -100,9 +97,6 @@ public class Student {
             }
         }
         return returnModel;
-    }
-    public void addModel(Model model){
-        models.add(model);
     }
     public Boolean isFinished(){
         return finished;

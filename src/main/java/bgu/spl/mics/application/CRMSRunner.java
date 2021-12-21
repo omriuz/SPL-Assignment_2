@@ -2,11 +2,15 @@ package bgu.spl.mics.application;
 
 import bgu.spl.mics.application.objects.*;
 import bgu.spl.mics.application.services.*;
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.io.*;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 
 
 /** This is the Main class of Compute Resources Management System application. You should parse the input file,
@@ -15,19 +19,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class CRMSRunner {
     public static void main(String[] args) throws InterruptedException {
-////        Student firstStudent = new Student("Simba","Computer Science", Student.Degree.MSc);
-////        Model firstModel = new Model("YOLO10",new Data(Data.Type.Images,200000),firstStudent);
-////        firstStudent.addModel(firstModel);
-
-//        GPU firstGpu = new GPU(GPU.Type.RTX3090);
-
-//        CPU cpu = new CPU(32);
-
-//        ConfrenceInformation first = new ConfrenceInformation("ICML",2000);
-
-
-
-//        createOutputFile(getOutputString(students,confrences,gpuTime.get(),cpuTime.get(),amountOfBatches.get()));
         //TODO: check path before submission
         JsonObject input = buildJSONObject("C:\\Users\\omri9\\Documents\\GitHub\\Assignment_2\\example_input.json");
         List<Student> students = BuildStudents(input);
@@ -54,15 +45,15 @@ public class CRMSRunner {
         Thread.sleep(1000);
         timing.start();
         timing.join();
-        for(Thread thread : threads)
+        for(Thread thread : threads) {
             thread.interrupt();
+            thread.join();
+        }
         int cpuTime = sumCpuTime(cpus);
         int gpuTime = sumGpuTime(gpus);
         int amountOfBatches = sumAmount(cpus);
-        System.out.println(amountOfBatches + "_______________________" + cpuTime);
         createOutputFile(getOutputString(students,conferences,gpuTime,cpuTime,amountOfBatches));
         System.out.println("finished the program");
-        //TODO: make sure that all the threads are cancelled
 
     }
 
@@ -70,7 +61,6 @@ public class CRMSRunner {
         int sum = 0;
         for(CPU cpu : cpus) {
             sum += cpu.getAmount();
-            System.out.println(cpu.getCount());
         }
         return sum;
     }
@@ -79,7 +69,6 @@ public class CRMSRunner {
         int sum = 0;
         for(GPU gpu : gpus) {
             sum += gpu.getCount();
-            System.out.println(gpu.getCount());
         }
         return sum;
     }
@@ -225,7 +214,7 @@ public class CRMSRunner {
         List<CPUService> ans = new LinkedList<>();
         int counter = 0;
         for(CPU cpu : cpus)
-            ans.add(new CPUService(String.valueOf(counter++),cpu));
+            ans.add(new CPUService(" CPU"+ counter++,cpu));
         return ans;
     }
     public static List<ConferenceService> buildConferenceServices(List<ConferenceInformation> confs){
@@ -238,10 +227,8 @@ public class CRMSRunner {
         List<StudentService> ans = new LinkedList<>();
         int counter = 0;
         for(Student student : students)
-            ans.add(new StudentService(String.valueOf(counter++),student));
+            ans.add(new StudentService(student.getName(),student));
         return ans;
     }
-//        StudentService firstStudentService = new StudentService("first",students.get(0));
-
 
 }

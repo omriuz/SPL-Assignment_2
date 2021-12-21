@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Conference service is in charge of
- * aggregating good results and publishing them via the {@link PublishConfrenceBroadcast},
  * after publishing results the conference will unregister from the system.
  * This class may not hold references for objects which it is not responsible for.
  *
@@ -33,7 +32,6 @@ public class ConferenceService extends MicroService {
         };
         tickBroadcastCallback = (TickBroadcast tickBroadcast)->{
             if(tickBroadcast.getTime()>=this.conferenceInformation.getDate()) {
-                System.out.println(getName() +" has published results");
                 sendBroadcast(new PublishConferenceBroadcast(this.conferenceInformation.getNames()));
                 terminate();
             }
