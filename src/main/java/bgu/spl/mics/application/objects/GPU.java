@@ -68,7 +68,9 @@ public class GPU {
      * @post numberOfBatchesSent = @pre numberOfBatchesSent + 1
      */
     public void sendDataBatch(){
-        cluster.sendDataBatchToCluster(new DataBatch(this.data,1000*numberOfBatchesSent,this));
+        DataBatch dataBatch = new DataBatch(this.data,1000*numberOfBatchesSent);
+        dataBatch.setGpu(this);
+        cluster.sendDataBatchToCluster(dataBatch);
         numberOfBatchesSent++;
     }
     /**

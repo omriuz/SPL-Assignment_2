@@ -89,6 +89,7 @@ public class Student {
         }
         else {
             if (currentModel == models.size()) {
+                System.out.println(name + " finished!!");
                 finished = true;
             }
             else {

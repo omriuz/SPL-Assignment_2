@@ -61,13 +61,6 @@ public class CPU {
     public void process(){
         count++;
         processTickCounter++;
-//        if(finishProcess()){
-//            amount++;
-//            cluster.addProcessedData(dataBatch);
-//            dataBatch = null;
-//            processTickCounter = 0;
-//            System.out.println("amount= " + amount + "______________  count= " + count);
-//        }
     }
     public void finish(){
         amount++;
@@ -87,5 +80,17 @@ public class CPU {
 
     public int getAmount() {
         return amount;
+    }
+
+    public int getTicksToProcess(){
+        return ticksToProcess;
+    }
+
+    public int getProcessTickCounter() {
+        return processTickCounter;
+    }
+
+    public DataBatch getDataBatch() {
+        return dataBatch;
     }
 }

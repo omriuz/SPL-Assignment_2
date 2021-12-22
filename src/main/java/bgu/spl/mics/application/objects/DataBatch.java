@@ -10,10 +10,8 @@ public class DataBatch {
     private final Data data;
     private GPU gpu;
 
-    public DataBatch(Data data, int start_index, GPU gpu) {
+    public DataBatch(Data data, int start_index) {
         this.data = data;
-        this.start_index = start_index;
-        this.gpu = gpu;
     }
 
     public Data getData() {
@@ -22,5 +20,9 @@ public class DataBatch {
 
     public GPU getGpu() {
         return gpu;
+    }
+
+    public void setGpu(GPU gpu) {
+        this.gpu = gpu;
     }
 }
